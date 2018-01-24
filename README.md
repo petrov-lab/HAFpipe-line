@@ -1,4 +1,4 @@
-# better-HAF-than-AF 🏂
+# HAF-pipe 🏂
 
 The workflow for this tool includes: 🏂
 
