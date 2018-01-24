@@ -1,6 +1,6 @@
-# better-HAF-than-AF
+# better-HAF-than-AF 🏂
 
-The workflow for this tool includes:
+The workflow for this tool includes: 🏂
 
 1: install harp (see bitbucket.com/dkessner/harp) <br>
 2: install R (tested on versions >= 3.2) and make sure it is in your path
