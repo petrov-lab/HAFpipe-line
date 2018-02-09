@@ -7,7 +7,7 @@ nofFounders=$(( $(head -1 $snpFile | tr ',' ' ' | wc -w) - 2 ))
 
 
 if [ ! -f ${snps}.alleleCts ]; then
-	echo "counting alleles in $snps"; $scriptsDir/count_SNPtable.sh $snps	
+	echo "counting alleles in $snps"; count_SNPtable.sh $snps	
 fi
 
 
