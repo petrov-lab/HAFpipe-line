@@ -21,8 +21,8 @@ while [ "$1" != "" ]; do
         -v | --vcf )            shift
                                 vcf=($1)
                                 ;;
-        -c | --chroms )         shift
-                                chroms=($(echo ${1} | tr ',' ' '))
+        -c | --chrom )          shift
+                                chrom=$1
                                 ;;
         -f | --firstSampleCol ) shift
                                 firstSampleCol=$1
@@ -30,8 +30,8 @@ while [ "$1" != "" ]; do
         -m | --minCalls )       shift
                                 minCalls=$1
                                 ;;
-        -o | --outfileBase )    shift
-                                outfileBase=$1
+        -o | --outdir )         shift
+                                outDir=$1
                                 ;;
         -t | --threads )        shift
                                 threads=$1
@@ -48,17 +48,11 @@ done
 ###################
 ## MAIN
 ##################
-if [ -z "$outfileBase" ]; then outfileBase=$(echo $vcf | sed 's/.vcf.gz//'); fi
-echo "making snptable for chroms:[$(echo ${chroms[*]})] from $vcf, starting from column $firstSampleCol, and writing to $outfileBase.<chrom>.snptable"
+outfileBase=$(basename $vcf | sed 's/.vcf.gz//'); fi
+outFile=$outfileBase.$chrom.snptable;
 
-makeSNPtable() {
-	vcf=${1}
-	firstSampleCol=${2}
-	minCalls=${3}
-	outfileBase=${4}
-	chrom=${5}
-	
-	outFile=$outfileBase.$chrom.snptable; echo "working on $outFile ..."; 
+echo "making snptable for chroms: $chrom from $vcf, starting from column $firstSampleCol, and writing to ${outFile}"
+
 	
 	##PRINT HEADER
 	zcat $vcf | head -1000  | grep "#C" | head -1 | awk -v fsc=$firstSampleCol '{for(i=fsc;i<=NF;i++){printf $i","}}' |  sed "s/^/${chrom},Ref,/" | sed 's/,$/\n/'  > $outFile 
@@ -92,11 +86,3 @@ makeSNPtable() {
 			}
 		}		
 	}' >> $outFile
-}
-export -f makeSNPtable
-
-parallel --gnu -j${threads} makeSNPtable $vcf $firstSampleCol $minCalls $outfileBase ::: ${chroms[*]}
-
-
-	
-
