@@ -5,7 +5,7 @@
 #################
 usage()
 {
-    echo "usage: make_SNPtable_from_vcf.sh [-v vcf.gz] [-c chroms] [ -o outDir ] [-f firstSampleCol=10] [-m minNofCalls=2] [ -t threads] [ -h help ]
+    echo "usage: make_SNPtable_from_vcf.sh [-v vcf.gz] [-c chroms] [ -o outdir ] [-f firstSampleCol=10] [-m minNofCalls=2] [ -t threads] [ -h help ]
 	** note that the vcf must be gzipped **
 "
 }
