@@ -4,6 +4,7 @@
 #########################################
 ## NOTE: harp binary must be in path. download harp from https://bitbucket.org/dkessner/harp
 
+
 usage()
 {
     echo "usage: infer_haplotype_freqs.sh [ -b bamfile ] | [ -bl filename of bamfile list ]  
@@ -139,4 +140,5 @@ get_haps(){
 
 export -f get_haps
 parallel --gnu -j${threads} get_haps $wins $illumina $outDir $refseq ::: ${snps[*]} ::: ${bams[*]}
+
 
