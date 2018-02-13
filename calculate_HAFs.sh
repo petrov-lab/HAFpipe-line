@@ -44,15 +44,24 @@ while [ "$1" != "" ]; do
     esac
     shift
 done
+
 chrom=$(head -1 ${snps}.numeric | cut -f1 -d',')
+
+
+get_HAFs(){
+	## VARS 
+	snps=${1};
+	outDir=${2}
+	freqs=${3}
+
 outFile=$outDir/$(basename $freqs | sed 's/.freqs/.afSite/')
 
 if [ ! -f ${snps}.bgz.tbi ]; then
  	if [ ! -f ${snps}.numeric ]; then
 		if [ ! -f ${snps}.alleleCts ]; then
-			echo "counting alleles in $snps"; $scriptsDir/count_SNPtable.sh $snps	
+			echo "counting alleles in $snps"; count_SNPtable.sh $snps	
 		fi
-		echo "making numeric version of $snps"; Rscript $scriptsDir/numeric_SNPtable.R $snps
+		echo "making numeric version of $snps"; Rscript numeric_SNPtable.R $snps
 	fi				
 	echo "bgzipping and indexing $snps"; 
 	tail -n +2 $snps.numeric | tr ',' '\t' | awk -v chrom="$chrom" '{
@@ -79,3 +88,6 @@ cat $freqs | tr ' ' '\t' | awk -v snps="${snps}.bgz" '{
 		snp_win_ct[$1]=snp_win_ct[$1]+1
 	}
 	END { for (pos in snp_sum_AF) print pos"\t"snp_sum_AF[pos]/snp_win_ct[pos] }' | sort -k1n | tr '\t' ',' >>  $outFile
+
+export -f get_HAFs
+parallel --gnu -j${threads} get_HAFs $snps $outDir ::: ${freqs[*]}
