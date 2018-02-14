@@ -7,7 +7,7 @@ PopulationConfigGenerator_ConstantSize pcg
     population_size = 1000
 
 RecombinationPositionGenerator_RecombinationMap rpg_map
-    filename = /mnt/lab_NGS_backup_v2/poolTest2/07_forqs_simulations/recomb_maps/RecRates-2L-100kb.csv
+    filename = RecRates-2L-100kb.csv
 
 VariantIndicator_Trivial vi_trivial
 
@@ -15,7 +15,7 @@ Reporter_Population reporter_population
     update_step = 5
 
 SimulatorConfig simconfig_!@#$_
-    output_directory = /mnt/cages/sim/snpTables/sus99_neutral/forqs
+    output_directory = forqs_out
     population_config_generator = pcg
     recombination_position_generator = rpg_map
     reporter = reporter_population
