@@ -14,7 +14,6 @@ if [ $# -lt 1 ]; then usage; exit; fi
 
 ##### Main 
 threads=1
-scriptsDir=$HOME/scripts/HAFpipe
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -45,16 +44,14 @@ while [ "$1" != "" ]; do
     shift
 done
 
-chrom=$(head -1 ${snps}.numeric | cut -f1 -d',')
-
-
 get_HAFs(){
 	## VARS 
 	snps=${1};
 	outDir=${2}
 	freqs=${3}
 
-outFile=$outDir/$(basename $freqs | sed 's/.freqs/.afSite/')
+	outFile=$outDir/$(basename $freqs | sed 's/.freqs/.afSite/')
+	chrom=$(head -1 ${snps}.numeric | cut -f1 -d',')
 
 if [ ! -f ${snps}.bgz.tbi ]; then
  	if [ ! -f ${snps}.numeric ]; then
@@ -64,7 +61,7 @@ if [ ! -f ${snps}.bgz.tbi ]; then
 		echo "making numeric version of $snps"; Rscript numeric_SNPtable.R $snps
 	fi				
 	echo "bgzipping and indexing $snps"; 
-	tail -n +2 $snps.numeric | tr ',' '\t' | awk -v chrom="$chrom" '{
+	tail -n +2 ${snps}.numeric | tr ',' '\t' | awk -v chrom="$chrom" '{
 		printf("%s\t%s",chrom,$1 ); $1=""; 
 		calledAlts=gsub(1,1,$0); uncalled=gsub(5,5,$0); calledRate=calledAlts/(NF-uncalled-1);  
 		gsub("0.5",calledRate,$0); 
@@ -78,7 +75,7 @@ cat $freqs | tr ' ' '\t' | awk -v snps="${snps}.bgz" '{
 	print $0; 
 	system("tabix "snps" "$1":"$2"-"$3" | cut -f2-") 
 }' | awk -v chrom="$chrom" '
-	($1==chrom){ for(ii=4;ii<=NF;ii++){freq[ii]=$ii} }; 
+	($1==chrom){ for(ii=4;ii<=NF;ii++){freq[ii-3]=$ii} }; 
 	($1!=chrom){  
 		snp_win_AF=0
 		for(ii=2;ii<=NF;ii++){
@@ -87,7 +84,9 @@ cat $freqs | tr ' ' '\t' | awk -v snps="${snps}.bgz" '{
 		snp_sum_AF[$1]=snp_sum_AF[$1]+snp_win_AF
 		snp_win_ct[$1]=snp_win_ct[$1]+1
 	}
-	END { for (pos in snp_sum_AF) print pos"\t"snp_sum_AF[pos]/snp_win_ct[pos] }' | sort -k1n | tr '\t' ',' >>  $outFile
+	END { for (pos in snp_sum_AF) print pos"\t"snp_sum_AF[pos]/snp_win_ct[pos] }
+' | sort -k1n | tr '\t' ',' >>  $outFile
 
 export -f get_HAFs
-parallel --gnu -j${threads} get_HAFs $snps $outDir ::: ${freqs[*]}
+parallel --gnu -j${threads} get_hafs $snps $outDir ::: ${freqs[*]}
+
