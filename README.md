@@ -42,7 +42,7 @@ Each parameter requires the full path to be specified.
  * **-r**  : a reference sequence in FASTA format
  * **-bl** : a text file of a list of bam files, where each line contains the full path of a bam file
  * **-v**  : a multi-sample VCF file of each individual founder in the starting population 
- * **-t**  : a SNP table that contains the the position, ref allele, and genotypes of the each individual founder. See ``` examples/snp_table.txt ``` included in this repository for examples.
+ * **-t**  : a SNP table that contains the the position, ref allele, and genotypes of the each individual founder. See ``` simulations/99.clean.SNP.HARP.segregating.gz``` included in this repository for examples.
  * **-s**  : Numerical value of the step(s) in the pipeline to run separated by a comma <br>
    * 1 - generates a SNP table from a multi-sample VCF file <br>
    * 2 - imputes missing sites from SNP table <br>
