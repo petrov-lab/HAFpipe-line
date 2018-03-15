@@ -86,7 +86,7 @@ cat $freqs | tr ' ' '\t' | awk -v snps="${snps}.bgz" '{
 	}
 	END { for (pos in snp_sum_AF) print pos"\t"snp_sum_AF[pos]/snp_win_ct[pos] }
 ' | sort -k1n | tr '\t' ',' >>  $outFile
-
+}
 export -f get_HAFs
-parallel --gnu -j${threads} get_hafs $snps $outDir ::: ${freqs[*]}
+parallel --gnu -j${threads} get_HAFs $snps $outDir ::: ${freqs[*]}
 
