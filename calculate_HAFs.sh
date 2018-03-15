@@ -51,7 +51,7 @@ get_HAFs(){
 	freqs=${3}
 
 	outFile=$outDir/$(basename $freqs | sed 's/.freqs/.afSite/')
-	chrom=$(head -1 ${snps}.numeric | cut -f1 -d',')
+	chrom=$(head -1 $freqs | cut -f1 -d' ')
 
 if [ ! -f ${snps}.bgz.tbi ]; then
  	if [ ! -f ${snps}.numeric ]; then
