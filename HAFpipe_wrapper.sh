@@ -125,6 +125,7 @@ for chrom in ${chroms[*]}; do
 			#optional args: [-f firstSampleCol=10] [-m minNofCalls=2]
 			;;  
 		2)	subset_SNPtable.sh ${snptable} ${snptable}${fset} $flist
+			;;
 		3)	case $method in
 			simpute) impute_SNPtable.sh ${snptable}${fset}; 
 				;;
@@ -135,8 +136,14 @@ for chrom in ${chroms[*]}; do
 			esac
 			;;
 		4)	infer_haplotype_freqs.sh $bamstring -s ${snptable}${fset}.${method} -r $refseq -w $wins -i $enc -o $outDir -t $threads
+			;;
 		5)	calculate_HAFs.sh $bamstring -s ${snptable}${fset} -o $outDir -t $threads
-			
+                        ;;
+        	* )      usage
+                        exit 1
+    		esac
+	done
+done
 
 
 
