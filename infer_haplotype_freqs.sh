@@ -7,52 +7,73 @@
 
 usage()
 {
-    echo "usage: infer_haplotype_freqs.sh [ -b bamfile ] | [ -bl filename of bamfile list ]  
-					  [ -s snps ] | [ -sl filename of snps list ]
-					  [ -r refseq ]
-					  [ -w wins=1000 ] 
-					  [ -i illumina-quality-encoding?=0|1(default) ] 
-					  [ -o outDir=<dirname bamfile> ] 
-					  [ -t threads=1(default)] 
-					  [ -h help ]
+    echo "usage: infer_haplotype_freqs.sh
+    	[ -o --outdir ]     output directory for .${chrom}.freqs files; 
+
+        [ -d --scriptdir ]  directory in which HAF-pipe scripts are located; 
+                            #(default: directory of this script )
+
+        [ -s --snptable ]   snp table to use for calculating haplotype and allele frequencies; tasks:2,3,4 
+          					#format: 
+          					#tab-delimited matrix of sites x founders, with 1 header line 
+          					#columns=position,ref-allele,founder1-allele,founder2-allele,...founderN-allele
+          					#columnheaders=[nameofChrom](required!),Ref,[founder1-name],[founder2-name]...[founderN-name]
+          					#nameofChrom must match a chromosome in the supplied reference fasta and a mapped chromosome in the supplied bamfile
+
+        [ -m --method ]     method used for imputation; 
+        					#the script will look for the file ${snptable}.${method} and will use this to estimate haplotype frequencies
+        					#if this file does not exist, an error will be thrown
+        					#method can be '' (ie. to infer freqs with an un-imputed SNP table)
+
+        [ -b --bamfile ]    name of bamfile with mapped reads for which haplotype frequencies will be inferred
+
+        [ -r --refseq ]     reference fasta file
+
+        [ -e --encoding ]   base quality encoding in bam file
+                            #'illumina' (default)
+                            #'sanger'
+
+        [ -w --winsize ]    window size (in kb) for haplotype inference; 
+                            #(default: 1000)
+                            #must be at least 10x smaller than length of chromosome 
+
+        [ -h help ]         show this help screen
 "
 }
 if [ $# -lt 1 ]; then usage; exit; fi
 
 ##### Main
 
+scriptdir=$(dirname "$0")
 wins=1000
-illumina=1
-threads=1
+method=''
+encoding="illumina"
 
 while [ "$1" != "" ]; do
     case $1 in
+        -d | --scriptdir )      shift
+                                scriptdir=$1
+                                ;;        
+        -o | --outdir )         shift
+                                outdir=$1
+                                ;;
+        -s | --snptable )       shift
+                                snptable=$1
+                                ;;
+        -m | --method )         shift
+                                method="."$1
+                                ;;
         -b | --bamfile )        shift
-                                bams=($1)
-                                ;;
-        -bl | --bamlist )       shift
-                                bams=($(cat $1))
-                                ;;
-        -s | --snps )           shift
-                                snps=($1)
-                                ;;
-        -sl | --snpslist )      shift
-                                snps=($(cat $1))
+                                bamfile=$1
                                 ;;
         -r | --refseq )         shift
                                 refseq=$1
                                 ;;
-        -w | --wins )           shift
+        -e | --encoding )       shift
+                                encoding=$1
+                                ;;
+        -w | --winsize )        shift
                                 wins=$1
-                                ;;
-        -i | --illumina )       shift
-                                illumina=$1
-                                ;;
-        -o | --outDir )         shift
-                                outDir=$1
-                                ;;
-        -t | --threads )        shift
-                                threads=$1
                                 ;;
         -h | --help )           usage
                                 exit
@@ -63,27 +84,20 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -z "$bams" ] || [ -z "$snps" ] || [ -z "$refseq" ] ; then echo "Missing either bams or snps or refseq argument. Please try again"; usage; exit; fi
-echo -e "********\ninferring haplotype freqs for [\n$(echo ${bams[*]} | tr ' ' '\n') \n]
-using haplotypes in [\n${snps[*]}\n]
-with ${wins}kb windows and $(echo $illumina | awk '($0==0){print "non-"}')illumina encoding\n*********"
-if [ -z "$outDir" ]; then outDir="none"; fi
+snptable=${snptable}${method}
+if [ -z "$bamfile" ] || [ -z "$snptable" ] || [ -z "$refseq" ] ; then echo "Missing either bam or snptable or refseq argument. Please try again"; usage; exit; fi
+
+echo -e "********\ninferring haplotype freqs for \n[ $bamfile ]\n
+using haplotypes in \n[ $snptable ]\n
+with ${wins}kb windows and $encoding base quality encoding\n*********"
+if [ -z "$outdir" ]; then outdir=$(dirname $bamfile); fi
+if [ ! -f ${snptable}.idx ]; then  $scriptdir/index_snp_table $snptable 50000; fi
 
 ###################
 ## MAIN
 #################################3
 
-get_haps(){
-	## VARS 
-	wins=${1}
-	illumina=${2}
-	outDir=${3}
-	refseq=${4}
-	snp=${5}
-	bam=${6}
-	
-	if [ "$outDir" == "none" ]; then outDir=$(dirname $bam); fi
-	outFile=$outDir/$(basename $bam)
+	outfile=$outdir/$(basename $bamfile)
 	
 	## SET HARP WINDOWS
 	likewindow=$(( $wins * 10000 ))  
@@ -92,11 +106,10 @@ get_haps(){
 	freqstep=$(( $wins * 100 )) 
 
 	## GET CHROM START AND END POSITION 
-	chrom=$(head -1 $snp | cut -f1 -d',')
+	chrom=$(head -1 $snptable | cut -f1 -d',')
 	chrStart=1
-	chrEnd=$(tail -n1 $snp | cut -d',' -f1)
+	chrEnd=$(tail -n1 $snptable | cut -d',' -f1)
 	
-	echo "running $bam vs. $snp"
 
 	## RUN HARP IN EACH WINDOW
 	for start in $(seq ${chrStart} ${likestep} ${chrEnd}) 
@@ -108,37 +121,32 @@ get_haps(){
 		
 		### run harp like
 		harp like \
-		-b $bam \
+		-b $bamfile \
 		--refseq $refseq \
-		--snps $snp \
+		--snps $snptable \
 		-r ${chrom}:${start}-${stop} \
-		--stem ${outFile}.${chrom}_${start}_${stop} \
-		$(echo $illumina | awk '($0==1){print "-I"}')  >/dev/null 2> /dev/null
+		--stem ${outfile}.${chrom}_${start}_${stop} \
+		$(echo $encoding | awk '($0=="illumina"){print "-I"}')  >/dev/null 2> /dev/null 
 		
 		### run harp freq
 		harp freq \
-		-b $bam \
+		-b $bamfile \
 		--refseq $refseq \
-		--snps $snp \
+		--snps $snptable \
 		-r ${chrom}:${start}-${stop} \
-		--stem ${outFile}.${chrom}_${start}_${stop} \
+		--stem ${outfile}.${chrom}_${start}_${stop} \
 		--window_step $freqstep \
 		--window_width $freqwindow \
-		$(echo $illumina | awk '($0==1){print "-I"}')  >/dev/null 2> /dev/null
-
+		$(echo $encoding | awk '($0=="illumina"){print "-I"}')  >/dev/null 2> /dev/null
+	
 		## CLEAN UP 
-		rm -r ${outFile}.${chrom}_${start}_${stop}.output
-		rm ${outFile}.${chrom}_${start}_${stop}.hlk
+		rm -r ${outfile}.${chrom}_${start}_${stop}.output
+		rm ${outfile}.${chrom}_${start}_${stop}.hlk
 		
 	done
 	
 	## CAT AND SORT HAPLOTYPE FREQUENCIES FROM ALL WINDOWS
-	cat ${outFile}.${chrom}_*.freqs | tr ' ' '\t' | sort -k2g | tr '\t' ' ' > ${outFile}.${chrom}.freqs
-	rm ${outFile}.${chrom}_*.freqs
-	echo "harp freqs written to ${outFile}.${chrom}.freqs"
-}
-
-export -f get_haps
-parallel --gnu -j${threads} get_haps $wins $illumina $outDir $refseq ::: ${snps[*]} ::: ${bams[*]}
-
+	cat ${outfile}.${chrom}_*.freqs | tr ' ' '\t' | sort -k2g | tr '\t' ' ' > ${outfile}.${chrom}.freqs
+	rm ${outfile}.${chrom}_*.freqs
+	echo "harp freqs written to ${outfile}.${chrom}.freqs"
 
