@@ -12,25 +12,53 @@ HAF-pipe is a bash- and R-based pipeline to calculate haplotype-inferred allele 
 
 
 
-1. HARP (see https://bitbucket.org/dkessner/harp )
-2. R version >= 3.2 (in your path)
+1. HARP (download from https://bitbucket.org/dkessner/harp )
+2. R version >= 3.2 (in your path) + library: data.table 
+3. tabix and bgzip (http://www.htslib.org/download/)
+
+## Tasks
+*	1 - make SNP table from VCF
+*	2 - impute SNP table
+*	3 - infer haplotype frequencies
+*	4 - calculate allele frequencies
+
+
 
 ## Usage
 
 
 
 ```
-HAFpipe-line.sh  [ -b bamfile ] | [ -bl filename of bamfile list ] 
-                    [ -r reference sequence ]
-                    [ -v vcf ] | [ -t snp table ]
-                    [ -s steps to run ] 
-                    [ -c chromosomes to run ]
-                    [ -o output directory ]
-                    [ -f founder subset list (default none) ]
-                    [ -e base quality encoding (default illumina) ]
-                    [ -w window size (in kb) for haplotype inference (default 1000kb) ]
-                    [ -t number of threads to use for parallization  (default 1) ]
-                    [ -h help ]
+HAFpipe_wrapper.sh [ -t --tasks ]   tasks to run (comma-separated)
+		[ -l --logfile ]    name of file to write log of commands to
+		[ -d --scriptdir ]  directory in which HAF-pipe scripts are located; tasks:1,2,3,4
+			#(default: directory of wrapper script )
+		[ -o --outdir ]     output directory; tasks:1,3,4 
+		[ -v --vcf ]        vcf file to be converted to snp table; tasks:1
+		[ -c --chrom ]      name of chromosome to extract from vcf; tasks:1
+		[ -s --snptable ]   snp table to use for calculating haplotype and allele frequencies; tasks:2,3,4 
+                            #will be overwritten if task 1 is run in conjunction with other tasks
+		[ -m --method ]     method to use for imputation in task 2 or file extension for task 3; tasks:2,3
+        		    for task 2, method must be one of:
+                            #'simpute' (simple imputation)
+                            #'npute' (see Roberts et al., 2007 - doi:10.1093/bioinformatics/btm220 )
+                            for task 3, method can be any string:
+                            #default:'none' 
+                            #if a string other than 'none' is supplied, the script will look for the file called [snptable].[method] and will use this to infer haplotype frequencies
+                            #if method is not specified or is 'none', the original [snptable] with potential missing calls will be used to infer haplotype frequencies
+		[ -n --nsites ]     number of neighboring sites to use with 'npute' imputation; tasks:2
+                            #(default: 20)
+		[ -b --bamfile ]    name of bamfile with mapped reads; tasks:3,4 
+		[ -r --refseq ]     reference sequence; tasks:3
+		[ -e --encoding ]   base quality encoding in bam files; tasks:3
+                            #'illumina' (default)
+                            #'sanger'
+		[ -g --generations ] number of generations of recombination; used to calculate window size for haplotype inference; tasks=3
+		[ -a --recombrate ] recombination rate used to calculate window size for haplotype inference; tasks=3	
+		[ -q --quantile ]   quantile of expected unrecombined segment distribution to use for determining haplotype inference window size; tasks:3
+		[ -w --winsize ]    user-defined window size (in kb) for haplotype inference; tasks:3
+                            #(overrides -g and -a) 
+		[ -h help ]         show this help screen
 ```
 ## Required Parameters
 
