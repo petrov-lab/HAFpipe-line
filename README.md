@@ -72,7 +72,8 @@ Creates a SNP table from a VCF of founder genotypes and uses it to estimate HAFs
 In this example, inferred haplotype frequencies will be written to ```exptData/sampledInds_cage2_gen15.mapped_dm5.freqs```
 and HAFs will be written to ```exptData/sampledInds_cage2_gen15.mapped_dm5.afSite```  <br>
 
-``` HAFpipe_wrapper.sh -t 1,2,3,4 \
+``` 
+HAFpipe_wrapper.sh -t 1,2,3,4 \
 -v refData/founderGenotypes.vcf \
 -c 2L \
 -s refData/founderGenotypes.segregating.snpTable \  ## will be created
