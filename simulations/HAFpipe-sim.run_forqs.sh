@@ -5,37 +5,109 @@
 
 
 ### SET DEFAULTS
-runName=default
+runID=default
 rounds=1
 pops=1
 popSize=1000
-recMap=/mnt/cages/ref_data/dgrp/recomb/RecRates-2L-100kb.csv
+recMap=dmel_recRates_2L-100kb.csv
 gens=200
 loci=0
 selection=0
 constantEffect=1
 report_every_nGens=1
-snps=/mnt/lab_NGS_backup_v2/poolTest2/04_harp_Runs/HARP.SNP.input/final.universe/99.clean.SNP.HARP.segregating.imputedSim.numeric 
+snps=99.clean.SNP.HARP.segregating.imputedSim.numeric 
 outDir="."
 
-### SET UP DIFFERENT RUNS
- outDir="/mnt/cages/sus99/selection/forqs/"
- #runName=sus99_neutral; pops=5; loci=0; selection=0; gens=50; rounds=3
+
+### USAGE
+usage()
+{
+    echo "
+	usage: HAFpipe-sim.run_forqs.sh  
+ 	-i | --runID )
+        -r | --rounds )
+	-p | --pops )
+	-n | --popSize )
+	-m | --recMap )
+	-g | --gens )
+	-l | --loci )
+	-c | --selectionCoeff )
+	-s | --snps )
+	-v | --report )
+	-o | --out )
+	-h | --help )
+"
+}
+
+### COMMAND LINE PARAMS
+
+if [ "$1" == "" ]; then usage; exit; fi
+
+## Parse User Parameters
+while [ "$1" != "" ]; do
+    case $1 in
+        -i | --runID )          shift
+                                runID=$1
+                                ;;
+        -r | --rounds )        	shift
+                                rounds=$1
+                                ;;
+        -p | --pops )      	shift
+                                pops=$1
+                                ;;
+        -n | --popSize )         shift
+                                popSize=$1
+                                ;;
+        -m | --recMap )         shift
+                                recMap=$1
+                                ;;
+        -g | --gens )          shift
+                                gens=$1
+                                ;;
+        -l | --loci )       	shift
+                                loci=$1
+                                ;;
+        -c | --selectionCoeff ) selection=$1
+                                ;;
+        -s | --snps )         	shift
+                                snps=$1
+                                ;;
+        -v | --report )         shift
+                                report_every_nGens=$1
+                                ;;
+       -o | --out )        	shift
+                                outDir=$1
+                                ;;
+       -h | --help )           usage
+                                exit
+                                ;;
+        * )                     echo unknown flag $1 ; usage
+                                exit 1
+    esac
+    shift
+done
+
+
+### RUNS FROM PAPER
+ outDir=forqs/
+ 
+	#runID=sus99_neutral; pops=5; loci=0; selection=0; gens=50; rounds=3
  runName=sus99_long; pops=3; loci=5; selection=.025; gens=250; rounds=1; report_every_nGens=25
- #runName=sus99_10sites_strong; pops=3; loci=10; selection=.1; gens=50; rounds=5
- #runName=sus99_5sites_strong; pops=5; loci=5; selection=.1; gens=50; rounds=3
- #runName=sus99_5sites_weak; pops=5; loci=5; selection=.025; gens=50; rounds=3
- #runName=sus99_10sites_weak; pops=5; loci=10; selection=.025; gens=50; rounds=3
- #runName=dgrp_5sites_weak; pops=5; loci=5; selection=.025; gens=50; rounds=3; snps=/mnt/cages/ref_data/dgrp/snps/all_lines/freeze2.2L.snptable.imputed.numeric
-#runName=cendr_5sites_weak; pops=5; loci=5; selection=.025; gens=50; rounds=3; snps=/mnt/lab_NGS_backup_v2/poolTest2/10_CeNDR/snpTables/CeNDR.chrI.clean.snptable_100_totalSubsetted.segregating.forMakingReads.imputed.numeric; recMap=/mnt/lab_NGS_backup_v2/poolTest2/10_CeNDR/recombinationMap_chrI.txt
+	#runID=sus99_10sites_strong; pops=3; loci=10; selection=.1; gens=50; rounds=5
+ 	#runID=sus99_5sites_strong; pops=5; loci=5; selection=.1; gens=50; rounds=3
+ 	#runID=sus99_5sites_weak; pops=5; loci=5; selection=.025; gens=50; rounds=3
+ 	#runID=sus99_10sites_weak; pops=5; loci=10; selection=.025; gens=50; rounds=3
+	#runID=dgrp_5sites_weak; pops=5; loci=5; selection=.025; gens=50; rounds=3; snps=freeze2.2L.snptable.imputed.numeric
+	#runID=cendr_5sites_weak; pops=5; loci=5; selection=.025; gens=50; rounds=3; snps=CeNDR_100.chrI.snptable.imputed.numeric; recMap=CeNDR_recombinationMap_chrI.txt
   
+
+### MAIN
 
 if [ ! -e $outDir ]; then mkdir $outDir; fi
 for round in `seq 1 $rounds`; do
-#seed=$RANDOM
 seed=$round
 
-configFile=$outDir/forqs.${runName}_${seed}.config.txt
+configFile=$outDir/forqs.${runID}_${seed}.config.txt
 
 echo "
 creating forqs config file for:
@@ -86,7 +158,7 @@ if [ $loci -gt 0 ]; then
 ## create ms file to:
 ## assign loci to positions in genome 
 ## assign alleles to haplotypes
-msfile=$outDir/forqs.${runName}_${seed}.ms.txt
+msfile=$outDir/forqs.${runID}_${seed}.ms.txt
 tail -n +2 $snps | shuf | head -$loci | tr ',' '\t' | sort -k1g > alleles.tmp
 echo "
 //
@@ -169,7 +241,7 @@ fi
 
 echo "
 SimulatorConfig
-    output_directory = $outDir/forqs.${runName}_${seed}
+    output_directory = $outDir/forqs.${runID}_${seed}
     population_config_generator = pcg
     write_popconfig = 1 # set this flag to write out the popconfig file
     recombination_position_generator = rpg_map
