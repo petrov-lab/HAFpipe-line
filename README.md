@@ -85,3 +85,11 @@ HAFpipe_wrapper.sh -t 1,2,3,4 \
 -o exptData 
 
 ```
+
+## Simulations
+
+To simulate recombination and pooled sequencing data from a panel of sequenced founders, see the scripts ```HAFpipe-sim.run_forqs.sh``` and ```HAFpipe-sim.simulate_poolseq.sh``` in the simulations folder. 
+* You can use the first script to simulate recombination for an experimental population of any size initiated from any sequenced founder set for any number of generations with any number of selected sites with any selection coefficient.  
+* You can use the second script to 'sample' any number of individuals from the recombined population at any generation and simulate pooled sequencing (150bp paired-end reads) of these individuals at any coverage with any sequencing error rate.  This script will also record the true allele frequencies of all segregating sites in the set of sampled individuals. Compare HAFs calculated from the simulated sequencing data to these true allele frequencies to assess effective coverage.  
+
+(Note that more generations, larger pool sizes, and higher coverage values will all increase run time)
