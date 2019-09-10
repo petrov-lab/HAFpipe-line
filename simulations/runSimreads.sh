@@ -5,13 +5,15 @@
 #########
 snps=${1}
 outFile=${2} 
-outDir=$(dirname $outFile)
-outBase=$(basename $outFile)
 cov=${3}
 err=${4}
 ref=${5}
 indivProportionsFile=${6:-NULL}. #ie. /mnt/lab_NGS_backup_v2/poolTest2/04_harp_Runs/HARP.SNP.input/final.universe/singletons.all.chrom.SNP.HARP.founder_identifiers.sharonProportions
 nondros=${7:-0}
+simreads=${8:-/mnt/cages/sim/scripts/simreads/simreads}
+
+outDir=$(dirname $outFile)
+outBase=$(basename $outFile)
 
 ########
 # SET UP PROPORTION OF CHROMOSOME EACH IN POOL
@@ -56,7 +58,7 @@ read_length 150
 ##########
 dir=$(pwd)
 cd $outDir
-/mnt/cages/sim/scripts/simreads/simreads $outFile.config.txt
+$simreads $outFile.config.txt
 cd $dir
 
 
