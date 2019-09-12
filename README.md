@@ -22,8 +22,6 @@ HAF-pipe is a bash- and R-based pipeline to calculate haplotype-inferred allele 
 *	3 - infer haplotype frequencies
 *	4 - calculate allele frequencies
 
-
-
 ## Usage
 
 
@@ -93,3 +91,7 @@ To simulate recombination and pooled sequencing data from a panel of sequenced f
 * You can use the second script to 'sample' any number of individuals from the recombined population at any generation and simulate pooled sequencing (150bp paired-end reads) of these individuals at any coverage with any sequencing error rate.  This script will also record the true allele frequencies of all segregating sites in the set of sampled individuals. Compare HAFs calculated from the simulated sequencing data to these true allele frequencies to assess effective coverage.  
 
 (Note that more generations, larger pool sizes, and higher coverage values will all increase run time)
+
+## Effective Coverage Calculator
+
+To calculate the accuracy (effective coverage) of HAFs according to specified experimental design choices in E + R experiments, see our shiny app: https://ec-calculator.shinyapps.io/shinyapp/
