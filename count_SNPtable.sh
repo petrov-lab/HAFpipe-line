@@ -2,7 +2,6 @@
 
 ## calculate allele frequency for founders at each site in SNP table  #
 ########################
-#snpTable=/mnt/cages/ref_data/dgrp/snps/all_lines/noN/new_2L.csv
 snpTable=${1}
 #########################
 echo "allele freqs will be written to ${snpTable}.alleleCts"
