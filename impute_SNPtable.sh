@@ -21,11 +21,16 @@ head -$namesRow $snpFile | tail -1 > $snpFile.imputed
 
 
 
- join -j 1 <(tail -n +2 $snpFile.alleleCts | awk -v cols="$posCol,$refCtCol,$altCtCol,$altCol" -F ',' 'BEGIN{split(cols,colArr,",")}{print $colArr[1]"\t"$colArr[2]"\t"$colArr[3]"\t"$colArr[4]}'  ) <(tail -n +$(( 1 + $namesRow )) $snpFile  | tr ',' '\t' ) |   awk -F ' ' -v nofFounders="$nofFounders" '
+ join -j 1 \
+ <(tail -n +2 $snpFile.alleleCts | awk -v cols="$posCol,$refCtCol,$altCtCol,$altCol" -F ',' '
+ 	BEGIN{split(cols,colArr,",")}{print $colArr[1]"\t"$colArr[2]"\t"$colArr[3]"\t"$colArr[4]}
+ 	'  ) \
+ <(tail -n +$(( 1 + $namesRow )) $snpFile  | tr ',' '\t' ) |   \
+ awk -F ' ' -v nofFounders="$nofFounders" '
  BEGIN{ srand()}
  { 
  	pos=$1; refCt=$2; altCt=$3; alt=$4; ref=$5
- 	if (refCt+altCt>0){
+ 	if ((refCt+altCt)>0){
 	printf pos","ref
 	for (i=6;i<=NF;i++) {
  		if ($i=="N")
