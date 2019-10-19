@@ -67,8 +67,8 @@ HAFpipe_wrapper.sh	[ -t --tasks ]		comma-separated list of tasks to run
 ## Example
 
 Creates a SNP table from a VCF of founder genotypes and uses it to estimate HAFs from a pooled sequencing sample.  
-In this example, inferred haplotype frequencies will be written to ```exptData/sampledInds_cage2_gen15.mapped_dm5.freqs```
-and HAFs will be written to ```exptData/sampledInds_cage2_gen15.mapped_dm5.afSite```  <br>
+In this example, inferred haplotype frequencies will be written to ```exptData/sampledInds_cage2_gen15.mapped_r5.39.freqs```
+and HAFs will be written to ```exptData/sampledInds_cage2_gen15.mapped_r5.39.afSite```  <br>
 
 ``` 
 HAFpipe_wrapper.sh -t 1,2,3,4 \
