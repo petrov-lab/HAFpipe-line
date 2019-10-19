@@ -6,26 +6,22 @@
 snpTable=${1}
 #########################
 echo "allele freqs will be written to ${snpTable}.alleleCts"
-echo "pos,ref,alt,nCt,refCt,altCt" > ${snpTable}.alleleCts
+echo "pos,ref,alt,nCt,refCt,altCt,hetCt" > ${snpTable}.alleleCts
 cat $snpTable | awk -F ',' '
 (NR>1){ 
 	pos=$1; ref=$2; alt="o"
 	nCt=gsub("N","N",$0)
 	refCt=gsub(ref,ref,$0)-1
-	altCt=0;
-	#evenAF=0; propAF=0; nCt=0;
+	altCt=0;hetCt=0;
+	
 	for (i=3;i<=NF;i++) {
-		if($i!="N" && $i!=ref)
-		{ alt=$i; altCt++; }
-	#	weight=1;
-	#	if ($i=="N") { weight=.5; nCt++ }
-	#	else if ($i==ref) { weight=0 }
-	#	else {alt=$i}
-	#	evenAF+=weight
-	#	propAF+=weight*fProp[i]
+		if($i!="N" && $i!=ref){
+			if(match("ACGT",$i)>0){ alt=$i; altCt++; }
+			else {hetCt++}
+		}
 	}
-	if ((altCt+nCt+refCt+2)!=NF) { print "invalid counts! "pos","ref","alt","nCt","refCt","altCt; exit 1 } 
-	print pos","ref","alt","nCt","refCt","altCt 
+	if ((altCt+nCt+refCt+hetCt+2)!=NF) { print "invalid counts! "pos","ref","alt","nCt","refCt","altCt","hetCt; exit 1 } 
+	print pos","ref","alt","nCt","refCt","altCt","hetCt 
 }' >> ${snpTable}.alleleCts
 
 			
