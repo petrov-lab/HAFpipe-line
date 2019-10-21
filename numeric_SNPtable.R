@@ -15,7 +15,11 @@ snpInfo<- as.data.frame(fread(snpInfoFile))
 chrom<-colnames(SNPs)[1]
 
 ##MAKE NUMERIC SNP TABLE
-numericSNPs<-apply(SNPs[,3:dim(SNPs)[2]],2,function(x) .5*(as.numeric(x=="N")) + as.numeric(x==snpInfo$alt))
+### ref=0; alt=1; het=.5; missing=-1
+make_numeric=function(x){-0.5*(as.numeric(x==snpInfo$ref)) + 0.5*as.numeric(x==snpInfo$alt) + -1.5*as.numeric(x=="N") + .5}
+numericSNPs<-apply(SNPs[,3:dim(SNPs)[2]],2,make_numeric)
+
+#numericSNPs<-apply(SNPs[,3:dim(SNPs)[2]],2,function(x) {.5*(as.numeric(x=="N")) + as.numeric(x==snpInfo$alt))
 rownames(numericSNPs)<-SNPs[,1]
 headers<-paste(c(chrom,colnames(numericSNPs)),collapse=",")
 cat(paste(headers,'\n',sep=""),file=paste(snpFile,".numeric",sep=""))

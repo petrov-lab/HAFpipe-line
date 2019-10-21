@@ -73,32 +73,33 @@ echo "making snptable for chrom $chrom from $vcf, starting from column $firstSam
 		baseCodes["AC"]="M";baseCodes["CA"]="M"
 	}
 	{
-		if(substr($0, 0, 1)!="#") {
-			if(length($5)==1 && length($4)==1) {
-				refCt=gsub("0/0","0/0",$0)-1; 
-				altCt=gsub("1/1","1/1",$0); 
-				if(refCt>0 && altCt>0 && ((refCt+altCt) > minCalls)){
-					
-					printf $2","$4 
+		if(length($5)==1 && length($4)==1) {
+			refCt=gsub("0/0","0/0",$0); 
+			altCt=gsub("1/1","1/1",$0); 
+			hetCt=gsub("0/1","0/1",$0); 
+			missingCt=gsub("\\./\\.","./.",$0); 
 			
-					for(i=fsc; i<=NF; i++) {
-						split($(i),parts,":")
-						GT = parts[1]
-						printf "," 
-						if(GT=="0/0") {
-							printf $4 
-						} else if (GT=="1/1") {
-							printf $5 
-						} else if (keephets>0 && ((GT=="0/1") || (GT=="1/0"))) {
-							printf baseCodes[$4$5] 
-						} 
-						else {
-							printf "N"
-						} 
-						
-					}
-					print "" 
+			if(refCt>0 && altCt>0 && ((refCt+altCt) > minCalls)){
+				
+				printf $2","$4 
+		
+				for(i=fsc; i<=NF; i++) {
+					split($(i),parts,":")
+					GT = parts[1]
+					printf "," 
+					if(GT=="0/0") {
+						printf $4 
+					} else if (GT=="1/1") {
+						printf $5 
+					} else if (keephets>0 && (GT=="0/1")) {
+						printf baseCodes[$4$5] 
+					} 
+					else {
+						printf "N"
+					} 
+					
 				}
+				print "" 
 			}
 		}		
 	}' >> $outfile
