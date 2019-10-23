@@ -198,7 +198,8 @@ class SNPData:
                     nuc = self.nucs[i,0].lower()
                 elif allele == I_MIN:
                     nuc = self.nucs[i,1].lower()
-                else nuc = allele  ### EDIT SIG 10/23/2019 - allows ambiguous symbols to remain in SNP table
+                else:
+                    nuc = allele  ### EDIT SIG 10/23/2019 - allows ambiguous symbols to remain in SNP table
                 out += ',' + nuc
             fi.write(out[1:] + '\n')
         print "Done"
