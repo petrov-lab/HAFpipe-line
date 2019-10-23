@@ -7,6 +7,9 @@ if [ $# -lt 1 ]
 then
     echo "format: npute_SNPtable.sh [snptable] [npute_dir] [winsize=20]"; 
     echo 'One or more variables are undefined. Please try again. 
+
+    **NPUTE python scripts can be downloaded from: http://compgen.unc.edu/wp/?page_id=57
+    **note that python 2 and the numpy package are required for npute
 '
 exit
 fi
@@ -27,7 +30,7 @@ if [ "$mode" = 1 ]; then
 	python $nputedir/NPUTE.py -m $mode -r $winsize -i ${snptable}.nputeIN -o ${snptable}.nputeTestWins$(echo $winsize | tr ':' '_')
 	rm ${snptable}.nputeIN 
 else
-	echo "running npute with window size $winsize" echo $mode
+	echo "running npute with window size $winsize" 
 	python $nputedir/NPUTE.py -m $mode -w $winsize -i ${snptable}.nputeIN -o ${snptable}.nputeOUT
 	head -1 $snptable > ${snptable}.npute
 	paste <(tail -n +2 ${snptable} | cut -f1-2 -d',') <(cat ${snptable}.nputeOUT | tr 'a-z' 'A-Z' | tr '\t' ',') | tr '\t' ',' >> ${snptable}.npute

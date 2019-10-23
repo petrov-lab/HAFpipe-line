@@ -174,7 +174,7 @@ class SNPData:
             elif val == MAJ:
                 iVal = I_MAJ
             else:
-                print loc
+                print "unknown imputed allele "+val+" at "+loc
             
             snps[locI] = snp[0:samp] + iVal + snp[samp+1:]
         print "Done"         
