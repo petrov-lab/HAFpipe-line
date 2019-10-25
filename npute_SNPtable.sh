@@ -18,10 +18,10 @@ fi
 ## MAIN
 ################
 snptable=${1}
-nputedir=${2}
-winsize=${3:-20}
-mode=${4:-0}
-outfile=${5:-$snptable.npute}
+winsize=${2:-20}
+mode=${3:-0}
+outfile=${4:-$snptable.npute}
+nputedir=${5:-"$(dirname $0)/Extra/NPUTEv1"}
 
 
 tail -n +2 ${snptable} | cut -f3- -d',' | tr 'N' '?' > ${snptable}.nputeIN
