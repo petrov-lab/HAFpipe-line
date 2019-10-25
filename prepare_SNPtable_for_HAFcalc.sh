@@ -20,7 +20,7 @@ tail -n +2 ${snptable}.numeric | tr ',' '\t' | awk -v chrom="$chrom" '{
 		alleleCt=NF-1
 		printf("%s\t%s",chrom,$1 ); 
 		$1="";
-		altCt=0
+		altCt=0; calledCt=0
 		for(ii=2;ii<=NF;ii++){
 			if($ii>=0){
 				altCt=altCt+$ii;
