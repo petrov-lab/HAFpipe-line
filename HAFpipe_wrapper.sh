@@ -19,6 +19,8 @@ usage()
 
         [ -c --chrom ]      name of chromosome to extract from vcf; tasks:1
 
+        [ -k --keephets ]   whether to keep heterozygous calls as ambiguous bases in SNPtable (rather than treat them as missing and impute them)
+
         [ -s --snptable ]   snp table to use for calculating haplotype and allele frequencies; tasks:2,3,4 
                             #will be overwritten if task 1 is run in conjuction with other tasks
 
@@ -63,6 +65,9 @@ usage()
     #requirements:
 	R (tested on versions >= 3.2)
 	R libraries: (data.table)
+    for imputation method 'npute':
+    -- python 2
+    -- numpy
     
     ## must be installed and on path: 
    1) harp
@@ -82,6 +87,7 @@ scriptdir=$(dirname "$0")
 outdir=.
 vcf=""
 chrom=""
+keephets=""
 method=""
 snptable=""
 nsites=20
@@ -95,7 +101,7 @@ gens=""
 
 
 
-if [ "$1" == "" ]; then usage; fi
+if [ "$1" == "" ]; then usage; exit; fi
 
 ## Parse User Parameters
 while [ "$1" != "" ]; do
@@ -118,14 +124,17 @@ while [ "$1" != "" ]; do
         -c | --chrom )          shift
                                 chrom=$1
                                 ;;
+        -k | --keephets )       
+                                keephets="--keephets"
+                                ;;
         -s | --snptable )       shift
                                 snptable=$1
                                 ;;
         -m | --method )         shift
                                 case $1 in 
-                                none ) method="" ;;
-				* ) method="."$1 ;;
-				esac
+                                    none ) method="" ;;
+				                    * ) method="."$1 ;;
+				                esac
                                 ;;
         -n | --nsites )         shift
                                 nsites=$1
@@ -145,7 +154,7 @@ while [ "$1" != "" ]; do
         -a | --recombrate )     shift
                                 recombrate=$1
                                 ;;
-        -q | --quantile )	shift
+        -q | --quantile )	    shift
                                 quantile=$1
                                 ;;
         -w | --winsize )        shift
@@ -165,7 +174,7 @@ done
 echo "
         $(date)
         ####PARAMETERS########
-        --tasks: $(echo $tasks)
+        --tasks: $tasks
         --scriptdir $scriptdir
         --outdir $outdir
         --vcf $vcf
@@ -191,8 +200,8 @@ echo "
 ### BEGIN
 for task in ${tasks[*]}; do
 	case $task in
-	1)	echo -e "$scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir \n $scriptdir/count_SNPtable.sh $snptable \n $scriptdir/numeric_SNPtable.sh $snptable" >> $logfile
-		snptable=$($scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir | tail -1) #optional args: [-f firstSampleCol=10] [-m minNofCalls=2]
+	1)	echo -e "$scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir $keephets \n $scriptdir/count_SNPtable.sh $snptable \n $scriptdir/numeric_SNPtable.sh $snptable" >> $logfile
+		snptable=$($scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir $keephets| tail -1) #optional args: [-f firstSampleCol=10] [-m minNofCalls=2]
 		$scriptdir/count_SNPtable.sh $snptable
 		Rscript $scriptdir/numeric_SNPtable.R $snptable
 		;;  
