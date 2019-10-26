@@ -129,6 +129,9 @@ while [ "$1" != "" ]; do
         -c | --chrom )          shift
                                 chrom=$1
                                 ;;
+        -m | --mincalls )       shift
+                                mincalls=$1
+                                ;;
         -k | --keephets )       
                                 keephets="--keephets"
                                 ;;
