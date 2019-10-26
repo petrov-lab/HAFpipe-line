@@ -5,7 +5,7 @@
 
 usage()
 {
-    echo "usage: HAFpipe-line.sh  \
+    echo "usage: HAFpipe-line.sh  
         [ -t --tasks ]      tasks to run (comma-separated)
 
         [ -l --logfile ]    name of file to write log of commands to
@@ -19,15 +19,18 @@ usage()
 
         [ -c --chrom ]      name of chromosome to extract from vcf; tasks:1
 
-        [ -k --keephets ]   whether to keep heterozygous calls as ambiguous bases in SNPtable (rather than treat them as missing and impute them)
+        [ -k --keephets ]   whether to keep heterozygous calls as ambiguous bases in SNPtable (rather than treat them as missing and impute them); tasks:1
+
+        [ -m --mincalls ]   keep only sites with at least this many ref|alt calls in SNPtable; tasks:1
+                            #(default 2)
 
         [ -s --snptable ]   snp table to use for calculating haplotype and allele frequencies; tasks:2,3,4 
                             #will be overwritten if task 1 is run in conjuction with other tasks
 
-        [ -m --method ]     method to use for imputation in task 2 or file extension for task 3; tasks:2,3
+        [ -i --impmethod ]  method to use for imputation in task 2 or file extension for task 3; tasks:2,3
         					for task 2, method must be one of:
                             #'simpute' (simple imputation)
-                            #'npute' (see Roberts et al., 2007 - doi:10.1093/bioinformatics/btm220 )
+                            #'npute' (see Roberts et al., 2007 - doi:10.1093/bioinformatics/btm220 and http://compgen.unc.edu/wp/?page_id=57 )
                             for task 3, method can be any string:
                             #default:'none' 
                             #if a string other than 'none' is supplied, the script will look for the file called [snptable].[method] and will use this to infer haplotype frequencies
@@ -47,9 +50,10 @@ usage()
 	[ -g --generations ] number of generations of recombination; used to calculate window size for haplotype inference; tasks=3
 	
 	[ -a --recombrate ] recombination rate used to calculate window size for haplotype inference; tasks=3	
+                        #default: 0.0000000239
 
 	[ -q --quantile ]   quantile of expected unrecombined segment distribution to use for determining haplotype inference window size; tasks:3
-
+                        #default: 18
         
 	[ -w --winsize ]    user-defined window size (in kb) for haplotype inference; tasks:3
                             #(overrides -g and -a) 
@@ -88,7 +92,8 @@ outdir=.
 vcf=""
 chrom=""
 keephets=""
-method=""
+mincalls=2
+impmethod=""
 snptable=""
 nsites=20
 bamfile=""
@@ -130,10 +135,10 @@ while [ "$1" != "" ]; do
         -s | --snptable )       shift
                                 snptable=$1
                                 ;;
-        -m | --method )         shift
+        -i | --impmethod )         shift
                                 case $1 in 
-                                    none ) method="" ;;
-				                    * ) method="."$1 ;;
+                                    none ) impmethod="" ;;
+				                    * ) impmethod="."$1 ;;
 				                esac
                                 ;;
         -n | --nsites )         shift
@@ -179,8 +184,10 @@ echo "
         --outdir $outdir
         --vcf $vcf
         --chrom $chrom
+        --mincalls $mincalls
+        $keephets
         --snptable $snptable
-        --method $method
+        --impmethod $impmethod
         --nsites $nsites
         --bamfile $bamfile
         --refseq $refseq
@@ -200,12 +207,11 @@ echo "
 ### BEGIN
 for task in ${tasks[*]}; do
 	case $task in
-	1)	echo -e "$scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir $keephets \n $scriptdir/count_SNPtable.sh $snptable \n $scriptdir/numeric_SNPtable.sh $snptable" >> $logfile
-		snptable=$($scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir $keephets| tail -1) #optional args: [-f firstSampleCol=10] [-m minNofCalls=2]
-		$scriptdir/count_SNPtable.sh $snptable
+	1)	echo -e "$scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir --mincalls $mincalls $keephets \\\n $scriptdir/count_SNPtable.sh $snptable \\\n $scriptdir/numeric_SNPtable.sh $snptable" >> $logfile
+		snptable=$($scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir --mincalls $mincalls $keephets| tail -1) 
 		Rscript $scriptdir/numeric_SNPtable.R $snptable
 		;;  
-	2)	case $method in
+	2)	case $impmethod in
 		".simpute") echo "$scriptdir/impute_SNPtable.sh ${snptable}" >> $logfile; $scriptdir/impute_SNPtable.sh ${snptable} 
 		;;
 		".npute") echo "$scriptdir/npute_SNPtable.sh ${snptable} $nsites" >> $logfile; $scriptdir/npute_SNPtable.sh ${snptable} $nsites
@@ -228,7 +234,7 @@ for task in ${tasks[*]}; do
 			fi	
 		fi
 		echo "$scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${method} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir" >> $logfile
-		$scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${method} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir >> $logfile
+		$scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir >> $logfile
 		;;
 	4)	chrom=$(head -1 $snptable | cut -f1 -d',')
 		freqs=$outdir/$(basename $bamfile)".$chrom.freqs"

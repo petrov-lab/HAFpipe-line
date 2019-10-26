@@ -79,7 +79,7 @@ echo "making snptable for chrom $chrom from $vcf, starting from column $firstSam
 			hetCt=gsub("0/1","0/1",$0); 
 			missingCt=gsub("\\./\\.","./.",$0); 
 			
-			if(refCt>0 && altCt>0 && ((refCt+altCt) > minCalls)){
+			if(refCt>0 && altCt>0 && ((refCt+altCt) > mincalls)){
 				
 				printf $2","$4 
 		
