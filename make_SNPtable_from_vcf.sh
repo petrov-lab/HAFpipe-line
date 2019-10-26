@@ -5,11 +5,20 @@
 #################
 usage()
 {
-    echo "usage: make_SNPtable_from_vcf.sh [-v --vcf] [-c --chrom] [ -o --outfile ] 
-    optional: [-f --firstSampleCol (default 10)] [-m --mincalls (default 2)] [-k --keephets] [ -t --threads (default 1)] [ -h --help ]
+    echo "usage: make_SNPtable_from_vcf.sh [-v --vcf] [-c --chrom] 
+    optional: 
+    [ -o --outfile (default: $(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable)] 
+    [-f --firstSampleCol (default 10) ] 
+    [-m --mincalls (default 2) ] 
+    [-u --subsetlist (default none)]
+    [-k --keephets] 
+    [ -t --threads (default 1) ] 
+    [ -h --help ]
 	** note that the vcf may be gzipped 
 	** only biallelic sites with at least one ref and one alt call will be recorded
 	** use --mincalls to limit to sites with a higher number of called alleles
+	** subset list is a 1-column list of names of founder haplotypes to keep in the snptable; 
+	   if not supplied, all founders will be included
 "
 }
 if [ $# -lt 1 ]; then usage; exit; fi
@@ -19,11 +28,13 @@ if [ $# -lt 1 ]; then usage; exit; fi
 firstSampleCol=10
 threads=1
 keephets=0
+mincalls=2
+subsetlist=none
 
 while [ "$1" != "" ]; do
     case $1 in
         -v | --vcf )            shift
-                                vcf=($1)
+                                vcf=$1
                                 ;;
         -c | --chrom )          shift
                                 chrom=$1
@@ -53,11 +64,13 @@ while [ "$1" != "" ]; do
     shift
 done
 
+if [ -z $outfile ]; then outfile=$(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable); fi
+
 ###################
 ## MAIN
 ##################
 
-echo "making snptable for chrom $chrom from $vcf, starting from column $firstSampleCol, and writing to $outfile"
+echo "making snptable for chrom $chrom from $vcf, starting from column $firstSampleCol"
 
 	
 	##PRINT HEADER
@@ -103,3 +116,14 @@ echo "making snptable for chrom $chrom from $vcf, starting from column $firstSam
 			}
 		}		
 	}' >> $outfile
+
+	if [ ! "$subsetlist" == "none" ]; then
+		$(dirname $0)/Extra/subset_SNPtable.sh \
+		-s $outfile \
+		-o $outfile.subset \
+		-f $subsetlist \
+		-m $mincalls ;
+		mv $outfile.subset $outfile
+	fi
+	echo "snptable written to:"
+	echo $outfile

@@ -13,19 +13,21 @@ usage()
         [ -d --scriptdir ]  directory in which HAF-pipe scripts are located; tasks:1,2,3,4
                             #(default: directory of this script )
 
-        [ -o --outdir ]     output directory; tasks:1,3,4 
+        [ -o --outdir ]     output directory for haplotype and allele frequencies; tasks:3,4 
 
         [ -v --vcf ]        vcf file to be converted to snp table; tasks:1
 
         [ -c --chrom ]      name of chromosome to extract from vcf; tasks:1
 
-        [ -k --keephets ]   whether to keep heterozygous calls as ambiguous bases in SNPtable (rather than treat them as missing and impute them); tasks:1
+        [ -s --snptable ]   snp table to use for calculating haplotype and allele frequencies; tasks:1,2,3,4 
+                            # will be written to this location if task 1 is run 
 
-        [ -m --mincalls ]   keep only sites with at least this many ref|alt calls in SNPtable; tasks:1
+        [ -k --keephets ]   whether to keep heterozygous calls as ambiguous bases in snp table (rather than treat them as missing and impute them); tasks:1
+
+        [ -m --mincalls ]   keep only sites with at least this many ref|alt calls in snp table; tasks:1
                             #(default 2)
+        [ -u --subsetlist ] name of file with a single column of founder names to keep in the snp table; tasks:1
 
-        [ -s --snptable ]   snp table to use for calculating haplotype and allele frequencies; tasks:2,3,4 
-                            #will be overwritten if task 1 is run in conjuction with other tasks
 
         [ -i --impmethod ]  method to use for imputation in task 2 or file extension for task 3; tasks:2,3
         					for task 2, method must be one of:
@@ -93,6 +95,7 @@ vcf=""
 chrom=""
 keephets=""
 mincalls=2
+subsetlist=""
 impmethod=""
 snptable=""
 nsites=20
@@ -137,6 +140,9 @@ while [ "$1" != "" ]; do
                                 ;;
         -s | --snptable )       shift
                                 snptable=$1
+                                ;;
+        -u | --subsetlist )     shift
+                                subsetlist=$1
                                 ;;
         -i | --impmethod )         shift
                                 case $1 in 
@@ -187,9 +193,10 @@ echo "
         --outdir $outdir
         --vcf $vcf
         --chrom $chrom
+        --snptable $snptable
         --mincalls $mincalls
         $keephets
-        --snptable $snptable
+        --subsetlist $subsetlist
         --impmethod $impmethod
         --nsites $nsites
         --bamfile $bamfile
@@ -204,46 +211,57 @@ echo "
 
 
 
-" > $logfile; 
+" >> $logfile; 
 
 
 ### BEGIN
 for task in ${tasks[*]}; do
 	case $task in
-	1)	echo -e "$scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir --mincalls $mincalls $keephets \\\n $scriptdir/count_SNPtable.sh $snptable \\\n $scriptdir/numeric_SNPtable.sh $snptable" >> $logfile
-		snptable=$($scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $outdir --mincalls $mincalls $keephets| tail -1) 
+	1)	if [ -z $vcf ] || [ ! -e $vcf ]; then echo "must choose valid vcf file"; exit 1; fi
+        if [ -z $chrom ] || [ ! $(zcat $vcf | head -5000 | grep ^##contig | grep "ID=${chrom},") ];  then echo "must choose valid chromosome"; exit 1; fi
+        if [ -z $snptable ] || [ ! -e $(dirname $snptable) ]; then echo "must choose valid snptable file"; exit 1; fi
+        echo -e "$scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $snptable --mincalls $mincalls --subset $subsetlist $keephets" >> $logfile
+		         $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $snptable --mincalls $mincalls --subset $subsetlist $keephets  >> $logfile
 		Rscript $scriptdir/numeric_SNPtable.R $snptable
 		;;  
 	2)	case $impmethod in
-		".simpute") echo "$scriptdir/impute_SNPtable.sh ${snptable}" >> $logfile; $scriptdir/impute_SNPtable.sh ${snptable} 
+		".simpute") echo "$scriptdir/impute_SNPtable.sh ${snptable}" >> $logfile; 
+                          $scriptdir/impute_SNPtable.sh ${snptable}  >> $logfile
 		;;
-		".npute") echo "$scriptdir/npute_SNPtable.sh ${snptable} $nsites" >> $logfile; $scriptdir/npute_SNPtable.sh ${snptable} $nsites
+		".npute") echo "$scriptdir/npute_SNPtable.sh ${snptable} $nsites" >> $logfile; 
+                        $scriptdir/npute_SNPtable.sh ${snptable} $nsites  >> $logfile
 		;;
 		* )	echo "not a valid imputation method"
 		exit 1
 		esac
 		;;
-    	3)	if [ "$winsize" == "" ]; then
+    3)	if [ -z $bamfile ] || [ ! -e $bamfile ]; then echo "must choose valid bam file"; exit 1; fi
+        if [ -z $snptable ] || [ ! -e $snptable ]; then echo "must choose valid snptable"; exit 1; fi
+        if [ -z $refseq ] || [ ! -e $refseq ]; then echo "must supply valid reference fasta"; exit 1; fi
+        if [ "$winsize" == "" ]; then
 			if [ "$gens" != "" ]; then
 				if [ $quantile -lt 100 ] && [ $quantile -gt 0 ]; then
 					chromlength=$(tail -1 $snptable | cut -f1 -d',')
 					winsize=$(Rscript -e \
-						"args <- commandArgs(TRUE);args=as.numeric(args); R=args[1];L=args[2];G=args[3];Q=args[4]; round(qexp(Q/100,1/(L/(R*L*G+1)))/1000)" \
-				$recombrate $chromlength $gens $quantile | cut -f2 -d' ');
-                			echo "running harp with window size: $winsize kb"
+						"args <- commandArgs(TRUE);args=as.numeric(args); \
+                        R=args[1];L=args[2];G=args[3];Q=args[4]; \
+                        round(qexp(Q/100,1/(L/(R*L*G+1)))/1000)" \
+				        $recombrate $chromlength $gens $quantile | cut -f2 -d' ');
+                	echo "running harp with window size: $winsize kb"
 				else echo "invalid quantile value. must be between 0 and 100."; exit; 
 				fi
 			else echo "number of generations must be defined to calculate window size"; exit
 			fi	
 		fi
-		echo "$scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${method} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir" >> $logfile
-		$scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir >> $logfile
+		echo "$scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir" >> $logfile
+		      $scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir >> $logfile
 		;;
-	4)	chrom=$(head -1 $snptable | cut -f1 -d',')
+	4)	if [ -z $snptable ] || [ ! -e $snptable ]; then echo "must choose valid snptable"; exit 1; fi
+        chrom=$(head -1 $snptable | cut -f1 -d',')
 		freqs=$outdir/$(basename $bamfile)".$chrom.freqs"
 		if [ ! -e $freqs ]; then echo "$freqs not found!"; exit 1; fi
-		echo "$scriptdir/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir" >> $logfile
-        $scriptdir/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d $scriptdir >> $logfile
+		echo "$scriptdir/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d $scriptdir" >> $logfile
+              $scriptdir/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d $scriptdir >> $logfile
         ;;
     * ) usage
         exit 1
