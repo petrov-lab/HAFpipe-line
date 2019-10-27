@@ -67,7 +67,7 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -z $outfile ]; then outfile=$(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable); fi
+if [ -z $outfile ]; then outfile=$(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable; fi
 
 ###################
 ## MAIN
