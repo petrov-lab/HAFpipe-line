@@ -48,6 +48,9 @@ while [ "$1" != "" ]; do
         -k | --keephets )       
                                 keephets=1
                                 ;;                            
+        -u | --subsetlist )     shift
+                                subsetlist=$1
+                                ;;
         -o | --outfile )        shift
                                 outfile=$1
                                 ;;
