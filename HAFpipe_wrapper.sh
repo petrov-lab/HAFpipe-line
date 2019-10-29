@@ -220,8 +220,8 @@ for task in ${tasks[*]}; do
 	1)	if [ -z $vcf ] || [ ! -e $vcf ]; then echo "must choose valid vcf file"; exit 1; fi
         if [ -z $chrom ] || [ ! $(zcat $vcf | head -5000 | grep ^##contig | grep "ID=${chrom},") ];  then echo "must choose valid chromosome"; exit 1; fi
         if [ -z $snptable ] || [ ! -e $(dirname $snptable) ]; then echo "must choose valid snptable file"; exit 1; fi
-        echo -e "$scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $snptable --mincalls $mincalls --subsetlist $subsetlist $keephets" >> $logfile
-		         $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -o $snptable --mincalls $mincalls --subsetlist $subsetlist $keephets  >> $logfile
+        echo -e "$scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls --subsetlist $subsetlist $keephets" >> $logfile
+		         $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls --subsetlist $subsetlist $keephets  >> $logfile
 		Rscript $scriptdir/numeric_SNPtable.R $snptable
 		;;  
 	2)	case $impmethod in
