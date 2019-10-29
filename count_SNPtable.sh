@@ -4,7 +4,6 @@
 ########################
 snpTable=${1}
 #########################
-echo "allele freqs will be written to ${snpTable}.alleleCts"
 echo "pos,ref,alt,nCt,refCt,altCt,hetCt" > ${snpTable}.alleleCts
 cat $snpTable | awk -F ',' '
 (NR>1){ 
@@ -23,4 +22,6 @@ cat $snpTable | awk -F ',' '
 	print pos","ref","alt","nCt","refCt","altCt","hetCt 
 }' >> ${snpTable}.alleleCts
 
+echo "allele counts written to:"
+echo ${snpTable}.alleleCts
 			

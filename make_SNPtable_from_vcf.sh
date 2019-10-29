@@ -7,11 +7,11 @@ usage()
 {
     echo "usage: make_SNPtable_from_vcf.sh [-v --vcf] [-c --chrom] 
     optional: 
-    [ -o --outfile (default: $(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable)] 
+    [ -s --snptable (default: $(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable)] 
     [-f --firstSampleCol (default 10) ] 
     [-m --mincalls (default 2) ] 
     [-u --subsetlist (default none)]
-    [-k --keephets] 
+    [-k --keephets ] 
     [ -t --threads (default 1) ] 
     [ -h --help ]
 	** note that the vcf may be gzipped 
@@ -51,8 +51,8 @@ while [ "$1" != "" ]; do
         -u | --subsetlist )     shift
                                 subsetlist=$1
                                 ;;
-        -o | --outfile )        shift
-                                outfile=$1
+        -s | --snptable )       shift
+                                snptable=$1
                                 ;;
         -t | --threads )        shift
                                 threads=$1
@@ -67,17 +67,17 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -z $outfile ]; then outfile=$(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable; fi
+if [ -z $snptable ]; then snptable=$(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable; fi
 
 ###################
 ## MAIN
 ##################
 
 echo "making snptable for chrom $chrom from $vcf, starting from column $firstSampleCol"
-
+scriptDir=$(dirname $0)
 	
 	##PRINT HEADER
-	zcat -f $vcf | head -1000  | grep "#C" | head -1 | awk -v fsc=$firstSampleCol '{for(i=fsc;i<=NF;i++){printf $i","}}' |  sed "s/^/${chrom},Ref,/" | sed 's/,$/\n/'  > $outfile 
+	zcat -f $vcf | head -1000  | grep "#C" | head -1 | awk -v fsc=$firstSampleCol '{for(i=fsc;i<=NF;i++){printf $i","}}' |  sed "s/^/${chrom},Ref,/" | sed 's/,$/\n/'  > $snptable 
 	
 	zcat -f $vcf | grep -P '^'$chrom'\t' | grep PASS | awk -v fsc="$firstSampleCol" -v mincalls="$mincalls" -v keephets="$keephets" '
 	BEGIN{
@@ -118,15 +118,18 @@ echo "making snptable for chrom $chrom from $vcf, starting from column $firstSam
 				print "" 
 			}
 		}		
-	}' >> $outfile
+	}' >> $snptable
 
 	if [ ! "$subsetlist" == "none" ]; then
-		$(dirname $0)/Extra/subset_SNPtable.sh \
-		-s $outfile \
-		-o $outfile.subset \
+		$scriptDir/Extra/subset_SNPtable.sh \
+		-s $snptable \
+		-o ${snptable}.subset \
 		-f $subsetlist \
 		-m $mincalls ;
-		mv $outfile.subset $outfile
+		mv ${snptable}.subset $snptable
 	fi
-	echo "snptable written to:"
-	echo $outfile
+
+	echo "SNP table written to:"
+	echo $snptable
+
+	$scriptDir/count_SNPtable.sh $snptable
