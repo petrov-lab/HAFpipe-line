@@ -6,7 +6,11 @@ HAF-pipe is a bash- and R-based pipeline to calculate haplotype-inferred allele 
 
 
 
-> Tilk et al. High accuracy haplotype-derived allele frequencies from ultra-low coverage pool-seq samples, bioRxiv, 2018. https://www.biorxiv.org/content/early/2018/01/11/244004  
+
+
+> Tilk, S., Bergland, A., Goodman, A., Schmidt, P., Petrov, D., & Greenblum, S. (2019). Accurate Allele Frequencies from Ultra-low Coverage Pool-Seq Samples in Evolve-and-Resequence Experiments. G3: Genes|Genomes|Genetics, 9(12), 4159 LP – 4168. https://doi.org/10.1534/g3.119.400755 
+
+
 
 ## Dependencies
 
