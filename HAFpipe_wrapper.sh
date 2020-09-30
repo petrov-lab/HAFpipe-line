@@ -217,27 +217,29 @@ echo "
 ### BEGIN
 for task in ${tasks[*]}; do
 	case $task in
-	1)	if [ -z $vcf ] || [ ! -e $vcf ]; then echo "must choose valid vcf file"; exit 1; fi
-        if [ -z $chrom ] || [ ! $(zcat $vcf | head -5000 | grep ^##contig | grep "ID=${chrom},") ];  then echo "must choose valid chromosome"; exit 1; fi
-        if [ -z $snptable ] || [ ! -e $(dirname $snptable) ]; then echo "must choose valid snptable file"; exit 1; fi
-        echo -e "$scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls --subsetlist $subsetlist $keephets" >> $logfile
+	1)	if [ -z $vcf ] || [ ! -e $vcf ]; then echo "ERROR: must choose valid vcf file ($vcf is empty or does not exist)"; exit 1; fi
+        if [ -z $chrom ] || [ ! $(zcat $vcf | head -5000 | grep ^##contig | grep "ID=${chrom},") ];  then echo "ERROR: must choose valid chromosome"; exit 1; fi
+        if [ -z $snptable ] || [ ! -e $(dirname $snptable) ]; then echo "ERROR: must choose valid snptable file ($snptable is empty and cannot be created in $(dirname $snptable)"; exit 1; fi
+        echo -e "COMMAND: $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls --subsetlist $subsetlist $keephets" >> $logfile
 		         $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls --subsetlist $subsetlist $keephets  >> $logfile
-		Rscript $scriptdir/numeric_SNPtable.R $snptable
+		Rscript $scriptdir/numeric_SNPtable.R $snptable >> $logfile
 		;;  
 	2)	case $impmethod in
-		".simpute") echo "$scriptdir/impute_SNPtable.sh ${snptable}" >> $logfile; 
+		".simpute") echo "COMMAND: $scriptdir/impute_SNPtable.sh ${snptable}" >> $logfile; 
                           $scriptdir/impute_SNPtable.sh ${snptable}  >> $logfile
 		;;
-		".npute") echo "$scriptdir/npute_SNPtable.sh ${snptable} $nsites" >> $logfile; 
+		".npute") echo "COMMAND: $scriptdir/npute_SNPtable.sh ${snptable} $nsites" >> $logfile; 
                         $scriptdir/npute_SNPtable.sh ${snptable} $nsites  >> $logfile
 		;;
-		* )	echo "not a valid imputation method"
+		* )	echo "ERROR: $impmethod is not a valid imputation method"
 		exit 1
 		esac
 		;;
-    3)	if [ -z $bamfile ] || [ ! -e $bamfile ]; then echo "must choose valid bam file"; exit 1; fi
-        if [ -z $snptable ] || [ ! -e $snptable ]; then echo "must choose valid snptable"; exit 1; fi
-        if [ -z $refseq ] || [ ! -e $refseq ]; then echo "must supply valid reference fasta"; exit 1; fi
+    3)	if [ -z $bamfile ] || [ ! -e $bamfile ]; then echo "ERROR: must choose valid bam file"; exit 1; fi
+        baifile=$(echo $bamfile | sed 's/$/.bai/')
+        if [ -z $baifile ] || [ ! -e $baifile ]; then echo "ERROR: bamfile $bamfile must be indexed with samtools\n($baifile is empty or does not exist)"; exit 1; fi
+        if [ -z $snptable ] || [ ! -e $snptable ]; then echo "ERROR: must choose valid snptable"; exit 1; fi
+        if [ -z $refseq ] || [ ! -e $refseq ]; then echo "ERROR: must supply valid reference fasta"; exit 1; fi
         if [ "$winsize" == "" ]; then
 			if [ "$gens" != "" ]; then
 				if [ $quantile -lt 100 ] && [ $quantile -gt 0 ]; then
@@ -247,23 +249,23 @@ for task in ${tasks[*]}; do
                         R=args[1];L=args[2];G=args[3];Q=args[4]; \
                         round(qexp(Q/100,1/(L/(R*L*G+1)))/1000)" \
 				        $recombrate $chromlength $gens $quantile | cut -f2 -d' ');
-                	echo "running harp with window size: $winsize kb"
-				else echo "invalid quantile value. must be between 0 and 100."; exit; 
+                	echo "running harp with window size: $winsize kb" 
+				else echo "ERROR: invalid quantile value. must be between 0 and 100, not $quantile."; exit; 
 				fi
-			else echo "number of generations must be defined to calculate window size"; exit
+			else echo "ERROR: number of generations must be defined to calculate window size"; exit
 			fi	
 		fi
-		echo "$scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir" >> $logfile
+		echo "COMMAND: $scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir" >> $logfile
 		      $scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir >> $logfile
 		;;
-	4)	if [ -z $snptable ] || [ ! -e $snptable ]; then echo "must choose valid snptable"; exit 1; fi
+	4)	if [ -z $snptable ] || [ ! -e $snptable ]; then echo "ERROR: must choose valid snptable ($snptable is empty or does not exist)"; exit 1; fi
         chrom=$(head -1 $snptable | cut -f1 -d',')
 		freqs=$outdir/$(basename $bamfile)".$chrom.freqs"
-		if [ ! -e $freqs ]; then echo "$freqs not found!"; exit 1; fi
-		echo "$scriptdir/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d $scriptdir" >> $logfile
+		if [ ! -e $freqs ]; then echo "ERROR: haplotype frequencies file $freqs not found!"; exit 1; fi
+		echo "COMMAND: $scriptdir/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d $scriptdir" >> $logfile
               $scriptdir/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d $scriptdir >> $logfile
         ;;
-    * ) usage
+    * ) echo "ERROR: $task is not a defined task number"; usage
         exit 1
     esac
 done
