@@ -8,7 +8,7 @@ HAF-pipe is a bash- and R-based pipeline to calculate haplotype-inferred allele 
 
 
 
-> Tilk, S., Bergland, A., Goodman, A., Schmidt, P., Petrov, D., & Greenblum, S. (2019). Accurate Allele Frequencies from Ultra-low Coverage Pool-Seq Samples in Evolve-and-Resequence Experiments. G3: Genes|Genomes|Genetics, 9(12), 4159 LP – 4168. https://doi.org/10.1534/g3.119.400755 
+> Tilk, S., Bergland, A., Goodman, A., Schmidt, P., Petrov, D., & Greenblum, S. (2019). Accurate Allele Frequencies from Ultra-low Coverage Pool-Seq Samples in Evolve-and-Resequence Experiments. G3: Genes|Genomes|Genetics, 9(12), 4159 LP – 4168. https://doi.org/10.1534/g3.119.400755
 
 
 
@@ -19,6 +19,7 @@ HAF-pipe is a bash- and R-based pipeline to calculate haplotype-inferred allele 
 1. HARP (download from https://bitbucket.org/dkessner/harp )
 2. R version >= 3.2 (in your path) + library: data.table 
 3. tabix and bgzip (http://www.htslib.org/download/)
+4. python2 and numpy (for the 'npute' method of task 2 only)
 
 ## Tasks
 *	1 - make SNP table from VCF
@@ -44,7 +45,10 @@ HAFpipe_wrapper.sh	[ -t --tasks ]		comma-separated list of tasks to run
 						   - columns are: position, ref allele, followed by genotypes of the each individual founder 
 						   - See 'simulations/99.clean.SNP.HARP.segregating.gz' included in this repository for examples 
                             			   - will be overwritten if task 1 is run in conjunction with other tasks 
-			[ -m --method ]     	method to use for imputation in task 2 or file extension for task 3; tasks:2,3
+			[ -k --keephets ]		flag to code heterozygous calls with an IUPAC ambiguous base code (instead of N); tasks:1 
+			[ -m --mincalls ]		minimum number of called genotypes to include a site in the SNP table; tasks:1 
+									- default: 2
+			[ -i --impmethod ]     	method to use for imputation in task 2 or file extension for task 3; tasks:2,3
         		    			   - for task 2, method must be one of: 
                             			      - 'simpute' (simple imputation) 
                             			      - 'npute' (see Roberts et al., 2007 - doi:10.1093/bioinformatics/btm220 ) 
