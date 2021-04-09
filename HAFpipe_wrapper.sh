@@ -144,11 +144,11 @@ while [ "$1" != "" ]; do
         -u | --subsetlist )     shift
                                 subsetlist="--subsetlist $1"
                                 ;;
-        -i | --impmethod )         shift
+        -i | --impmethod )      shift
                                 case $1 in 
-                                    none ) impmethod="" ;;
-				                    * ) impmethod="."$1 ;;
-				                esac
+                                	none ) impmethod="" ;;
+					* ) impmethod="."$1 ;;
+				esac
                                 ;;
         -n | --nsites )         shift
                                 nsites=$1
@@ -217,9 +217,10 @@ echo "
 ### BEGIN
 for task in ${tasks[*]}; do
 	case $task in
-	1)	if [ -z $vcf ] || [ ! -e $vcf ]; then echo "ERROR: must choose valid vcf file ($vcf is empty or does not exist)"; exit 1; fi
+	1)	if [ -z $vcf ] || [ ! -e $vcf ]; then echo "ERROR: must supply a valid vcf file (--vcf parameter $vcf is not defined or does not exist)"; exit 1; fi
         if [ -z $chrom ] || [ ! $(zcat $vcf | head -5000 | grep ^##contig | grep "ID=${chrom},") ];  then echo "ERROR: must choose valid chromosome"; exit 1; fi
-        if [ -z $snptable ] || [ ! -e $(dirname $snptable) ]; then echo "ERROR: must choose valid snptable file ($snptable is empty and cannot be created in $(dirname $snptable)"; exit 1; fi
+        if [ -z $snptable ]; then echo "ERROR: must supply a valid location for writing the snptable file (set the --snptable parameter)"; exit 1; fi
+	if [ ! -e $(dirname $snptable) ]; then echo "ERROR: must supply a valid location for writing the snptable file ( $(dirname $snptable) does not exist)"; exit 1; fi
         echo -e "COMMAND: $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets" >> $logfile
 		         $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets  >> $logfile
 		Rscript $scriptdir/numeric_SNPtable.R $snptable >> $logfile
@@ -258,7 +259,7 @@ for task in ${tasks[*]}; do
 		echo "COMMAND: $scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir" >> $logfile
 		      $scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir >> $logfile
 		;;
-	4)	if [ -z $snptable ] || [ ! -e $snptable ]; then echo "ERROR: must choose valid snptable ($snptable is empty or does not exist)"; exit 1; fi
+	4)	if [ -z $snptable ] || [ ! -e $snptable ]; then echo "ERROR: must choose valid snptable (--snptable parameter $snptable is not defined or does not exist)"; exit 1; fi
         chrom=$(head -1 $snptable | cut -f1 -d',')
 		freqs=$outdir/$(basename $bamfile)".$chrom.freqs"
 		if [ ! -e $freqs ]; then echo "ERROR: haplotype frequencies file $freqs not found!"; exit 1; fi
