@@ -142,7 +142,7 @@ while [ "$1" != "" ]; do
                                 snptable=$1
                                 ;;
         -u | --subsetlist )     shift
-                                subsetlist=$1
+                                subsetlist="--subsetlist $1"
                                 ;;
         -i | --impmethod )         shift
                                 case $1 in 
@@ -220,8 +220,8 @@ for task in ${tasks[*]}; do
 	1)	if [ -z $vcf ] || [ ! -e $vcf ]; then echo "ERROR: must choose valid vcf file ($vcf is empty or does not exist)"; exit 1; fi
         if [ -z $chrom ] || [ ! $(zcat $vcf | head -5000 | grep ^##contig | grep "ID=${chrom},") ];  then echo "ERROR: must choose valid chromosome"; exit 1; fi
         if [ -z $snptable ] || [ ! -e $(dirname $snptable) ]; then echo "ERROR: must choose valid snptable file ($snptable is empty and cannot be created in $(dirname $snptable)"; exit 1; fi
-        echo -e "COMMAND: $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls --subsetlist $subsetlist $keephets" >> $logfile
-		         $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls --subsetlist $subsetlist $keephets  >> $logfile
+        echo -e "COMMAND: $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets" >> $logfile
+		         $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets  >> $logfile
 		Rscript $scriptdir/numeric_SNPtable.R $snptable >> $logfile
 		;;  
 	2)	case $impmethod in
