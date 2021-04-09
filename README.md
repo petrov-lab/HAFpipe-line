@@ -83,7 +83,7 @@ HAFpipe_wrapper.sh -t 1,2,3,4 \
 -v refData/founderGenotypes.vcf \
 -c 2L \
 -s refData/founderGenotypes.segregating.snpTable \  ## will be created
--m simpute \
+-i simpute \
 -b exptData/sampledInds_cage2_gen15.mapped_r5.39.bam \
 -e sanger \
 -g 15 \
