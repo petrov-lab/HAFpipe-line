@@ -129,7 +129,8 @@ scriptDir=$(dirname $0)
 		mv ${snptable}.subset $snptable
 	fi
 
+	$scriptDir/count_SNPtable.sh $snptable
+	$scriptDir/prepare_SNPtable_for_HAFcalc.sh $snptable
+
 	echo "SNP table written to:"
 	echo $snptable
-
-	$scriptDir/count_SNPtable.sh $snptable

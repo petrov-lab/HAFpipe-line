@@ -223,7 +223,6 @@ for task in ${tasks[*]}; do
 	if [ ! -e $(dirname $snptable) ]; then echo "ERROR: must supply a valid location for writing the snptable file ( $(dirname $snptable) does not exist)"; exit 1; fi
         echo -e "COMMAND: $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets" >> $logfile
 		         $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets  >> $logfile
-		Rscript $scriptdir/numeric_SNPtable.R $snptable >> $logfile
 		;;  
 	2)	case $impmethod in
 		".simpute") echo "COMMAND: $scriptdir/impute_SNPtable.sh ${snptable}" >> $logfile; 
