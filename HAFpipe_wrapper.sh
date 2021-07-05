@@ -218,7 +218,7 @@ echo "
 for task in ${tasks[*]}; do
 	case $task in
 	1)	if [ -z $vcf ] || [ ! -e $vcf ]; then echo "ERROR: must supply a valid vcf file (--vcf parameter $vcf is not defined or does not exist)"; exit 1; fi
-        if [ -z $chrom ] || [ ! $(zcat $vcf | head -5000 | grep ^##contig | grep "ID=${chrom},") ];  then echo "ERROR: must choose valid chromosome"; exit 1; fi
+        if [ -z $chrom ];  then echo "ERROR: must choose valid chromosome"; exit 1; fi
         if [ -z $snptable ]; then echo "ERROR: must supply a valid location for writing the snptable file (set the --snptable parameter)"; exit 1; fi
 	if [ ! -e $(dirname $snptable) ]; then echo "ERROR: must supply a valid location for writing the snptable file ( $(dirname $snptable) does not exist)"; exit 1; fi
         echo -e "COMMAND: $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets" >> $logfile
