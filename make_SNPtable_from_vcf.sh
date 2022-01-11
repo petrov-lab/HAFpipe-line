@@ -125,7 +125,7 @@ scriptDir=$(dirname $0)
 						printf $4 
 					} else if (GT=="1/1") {
 						printf $5 
-					} else if (keephets>0 && ((GT=="0/1") || (GT=="1/0")) {
+					} else if (keephets>0 && ((GT=="0/1") || (GT=="1/0"))) {
 						printf baseCodes[$4$5] 
 					} 
 					else {
