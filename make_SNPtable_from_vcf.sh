@@ -90,24 +90,42 @@ scriptDir=$(dirname $0)
 	}
 	{
 		if(length($5)==1 && length($4)==1) {
-			refCt=gsub("0/0","0/0",$0); 
-			altCt=gsub("1/1","1/1",$0); 
-			hetCt=gsub("0/1","0/1",$0); 
-			missingCt=gsub("\\./\\.","./.",$0); 
 			
-			if(refCt>0 && altCt>0 && ((refCt+altCt) > mincalls)){
+			gt_field=0
+			split($(fsc-1),field_ids,":")
+			for(ii=1;ii<=length(field_ids);ii++){
+				if(field_ids[ii]=="GT"){gt_field=ii}
+			}
+		        if(gt_field==0){
+		        	print "ERROR: Genotype (GT) not found in VCF info fields! Exiting."; exit
+		        }
+
+		        genotypes=""
+		        for(ii=fsc;ii<=NF;ii++){
+		        	split($ii,fields,":");
+		        	gsub("\\|","/",fields[gt_field]);
+		        	genotypes=genotypes","fields[gt_field]
+		        };
+     
+
+			refCt=gsub("0/0","0/0",genotypes); 
+			altCt=gsub("1/1","1/1",genotypes); 
+			hetCt=gsub("0/1","0/1",genotypes); 
+			missingCt=gsub("\\./\\.","./.",genotypes); 
+			
+			if((hetCt>0 || (refCt>0 && altCt>0)) && ((refCt+altCt+hetCt) >= mincalls)){
 				
 				printf $2","$4 
-		
-				for(i=fsc; i<=NF; i++) {
-					split($(i),parts,":")
-					GT = parts[1]
+				split(genotypes,gt_array,",")
+				for(ii=1; ii<=length(gt_array); ii++) {
+					
+					GT = gt_array[ii]
 					printf "," 
 					if(GT=="0/0") {
 						printf $4 
 					} else if (GT=="1/1") {
 						printf $5 
-					} else if (keephets>0 && (GT=="0/1")) {
+					} else if (keephets>0 && ((GT=="0/1") || (GT=="1/0")) {
 						printf baseCodes[$4$5] 
 					} 
 					else {
