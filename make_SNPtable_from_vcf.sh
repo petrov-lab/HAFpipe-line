@@ -117,7 +117,7 @@ scriptDir=$(dirname $0)
 				
 				printf $2","$4 
 				split(genotypes,gt_array,",")
-				for(ii=1; ii<=length(gt_array); ii++) {
+				for(ii=2; ii<=length(gt_array); ii++) {
 					
 					GT = gt_array[ii]
 					printf "," 
