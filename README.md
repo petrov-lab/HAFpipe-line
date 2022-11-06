@@ -35,7 +35,7 @@ For further references, such as references of the imputation methods, please see
 ## Usage
 
 ```
-HAF-pipe.sh
+HAFpipe_wrapper.sh
     [ -t --tasks ]          comma-separated list of tasks to run
     [ -l --logfile ]        name of file to write log to
                                 - default: HAFpipe-log.`date +%Y-%m-%d.%H%M%S`
@@ -86,7 +86,7 @@ In this example, inferred haplotype frequencies will be written to ```exptData/s
 and HAFs will be written to ```exptData/sampledInds_cage2_gen15.mapped_r5.39.2L.afSite```  <br>
 
 ```
-HAF-pipe.sh -t 1,2,3,4 \
+HAFpipe_wrapper.sh -t 1,2,3,4 \
 -v refData/founderGenotypes.vcf \
 -c 2L \
 -s refData/founderGenotypes.segregating.snpTable \  ## will be created
