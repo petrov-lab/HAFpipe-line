@@ -8,7 +8,7 @@
 outDir=.
 poolSize=100
 errRate=.002
-scriptDir=../
+maindir=$(dirname "$0")/..
 
 # ==================================================================================================
 #      Usage
@@ -97,12 +97,12 @@ echo "recombining snps in
 $snps
 for $runID gen ${gen} pop ${rep} round ${round}" >> $logfile #> /dev/tty #
 
-$scriptDir/simulations/recombineSNPtable_reps.sh $snps $forqsDir $gen $rep $poolSize $snpsDir/round${round}
+${maindir}/simulations/recombineSNPtable_reps.sh $snps $forqsDir $gen $rep $poolSize $snpsDir/round${round}
 recombinedSNPs=$snpsDir/round${round}/$(basename $snps).g${gen}.r${rep}
 if [ -e ${recombinedSNPs}.idx ]; then rm ${recombinedSNPs}.idx; fi
 
-$scriptDir/index_snp_table $recombinedSNPs 10000
-$scriptDir/count_SNPtable.sh $recombinedSNPs
+${maindir}/scripts/index_snp_table $recombinedSNPs 10000
+${maindir}/scripts/count_SNPtable.sh $recombinedSNPs
 mv $recombinedSNPs.alleleCts $snpsDir/$(basename $snps).g${gen}.r${rep}.round${round}.alleleCts
 mv $recombinedSNPs.brkpts $snpsDir/$(basename $snps).g${gen}.r${rep}.round${round}.brkpts
 echo "true allele frequencies calculated: " >> $logfile #> /dev/tty
@@ -113,7 +113,7 @@ if [ ! -e  $bamDir ] ; then mkdir -p $bamDir; fi
 for cov in $(echo $covString | tr ',' '\n'); do
     simreadsStem=$bamDir/simreads.${gen}g.r${rep}.${cov}x.round${round}
     echo "simulating reads at ${cov}x cov" >> $logfile
-    $scriptDir/simulations/runSimreads.sh $recombinedSNPs $simreadsStem $cov $errRate $refFasta
+    ${maindir}/simulations/runSimreads.sh $recombinedSNPs $simreadsStem $cov $errRate $refFasta
     echo "reads written to:" >> $logfile
     ls -lh $simreadsStem.bam >> $logfile
 done

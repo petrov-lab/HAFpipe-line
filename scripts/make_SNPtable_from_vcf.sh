@@ -10,10 +10,10 @@ usage()
     echo "usage: make_SNPtable_from_vcf.sh [-v --vcf] [-c --chrom]
     optional:
     [ -s --snptable (default: $(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable)]
-    [-f --firstSampleCol (default 10) ]
-    [-m --mincalls (default 2) ]
-    [-u --subsetlist (default none)]
-    [-k --keephets ]
+    [ -f --firstSampleCol (default 10) ]
+    [ -m --mincalls (default 2) ]
+    [ -u --subsetlist (default none)]
+    [ -k --keephets ]
     [ -t --threads (default 1) ]
     [ -h --help ]
     ** note that the vcf may be gzipped
@@ -78,7 +78,7 @@ if [ -z $snptable ]; then snptable=$(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//'
 # ==================================================================================================
 
 echo "making snptable for chrom $chrom from $vcf, starting from column $firstSampleCol"
-scriptDir=$(dirname $0)
+maindir=$(dirname $0)/..
 
 ##PRINT HEADER
 zcat -f $vcf | head -1000  | grep "#C" | head -1 | awk -v fsc=$firstSampleCol '{for(i=fsc;i<=NF;i++){printf $i","}}' |  sed "s/^/${chrom},Ref,/" | sed 's/,$/\n/'  > $snptable
@@ -142,7 +142,7 @@ BEGIN{
 }' >> $snptable
 
 if [ ! "$subsetlist" == "none" ]; then
-    $scriptDir/Extra/subset_SNPtable.sh \
+    ${maindir}/scripts/subset_SNPtable.sh \
     -s $snptable \
     -o ${snptable}.subset \
     -f $subsetlist \
@@ -150,8 +150,8 @@ if [ ! "$subsetlist" == "none" ]; then
     mv ${snptable}.subset $snptable
 fi
 
-$scriptDir/count_SNPtable.sh $snptable
-$scriptDir/prepare_SNPtable_for_HAFcalc.sh $snptable
+${maindir}/scripts/count_SNPtable.sh $snptable
+${maindir}/scripts/prepare_SNPtable_for_HAFcalc.sh $snptable
 
 echo "SNP table written to:"
 echo $snptable

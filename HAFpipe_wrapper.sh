@@ -13,7 +13,7 @@ usage()
 
         [ -l --logfile ]    name of file to write log of commands to
 
-        [ -d --scriptdir ]  directory in which HAF-pipe scripts are located; tasks:1,2,3,4
+        [ -d --maindir ]    directory in which HAF-pipe is located; tasks:1,2,3,4
                             #(default: directory of this script )
 
         [ -o --outdir ]     output directory for haplotype and allele frequencies; tasks:3,4
@@ -92,7 +92,7 @@ usage()
 ## Set Default Parameters
 tasks=0
 logfile=$(echo HAFpipe-log.`date +%Y-%m-%d.%H%M%S`)
-scriptdir=$(dirname "$0")
+maindir=$(dirname "$0")
 outdir=.
 vcf=""
 chrom=""
@@ -121,8 +121,8 @@ while [ "$1" != "" ]; do
         -l | --logfile )        shift
                                 logfile=$1
                                 ;;
-        -d | --scriptdir )      shift
-                                scriptdir=$1
+        -d | --maindir )        shift
+                                maindir=$1
                                 ;;
         -o | --outdir )         shift
                                 outdir=$1
@@ -189,7 +189,7 @@ echo "
         $(date)
         ####PARAMETERS########
         --tasks: $tasks
-        --scriptdir $scriptdir
+        --maindir $maindir
         --outdir $outdir
         --vcf $vcf
         --chrom $chrom
@@ -220,17 +220,17 @@ for task in ${tasks[*]}; do
             if [ -z $chrom ];  then echo "ERROR: must choose valid chromosome"; exit 1; fi
             if [ -z $snptable ]; then echo "ERROR: must supply a valid location for writing the snptable file (set the --snptable parameter)"; exit 1; fi
             if [ ! -e $(dirname $snptable) ]; then echo "ERROR: must supply a valid location for writing the snptable file ( $(dirname $snptable) does not exist)"; exit 1; fi
-            echo -e "COMMAND: $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets" >> $logfile
-            $scriptdir/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets  >> $logfile
+            echo -e "COMMAND: ${maindir}/scripts/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets" >> $logfile
+            ${maindir}/scripts/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets  >> $logfile
             ;;
         2)  case $impmethod in
                 ".simpute")
-                    echo "COMMAND: $scriptdir/impute_SNPtable.sh ${snptable}" >> $logfile;
-                    $scriptdir/impute_SNPtable.sh ${snptable}  >> $logfile
+                    echo "COMMAND: ${maindir}/scripts/impute_SNPtable.sh ${snptable}" >> $logfile;
+                    ${maindir}/scripts/impute_SNPtable.sh ${snptable}  >> $logfile
                     ;;
                 ".npute")
-                    echo "COMMAND: $scriptdir/npute_SNPtable.sh ${snptable} $nsites" >> $logfile;
-                    $scriptdir/npute_SNPtable.sh ${snptable} $nsites  >> $logfile
+                    echo "COMMAND: ${maindir}/scripts/npute_SNPtable.sh ${snptable} $nsites" >> $logfile;
+                    ${maindir}/scripts/npute_SNPtable.sh ${snptable} $nsites  >> $logfile
                     ;;
                 * )
                     echo "ERROR: $impmethod is not a valid imputation method"
@@ -257,15 +257,15 @@ for task in ${tasks[*]}; do
                 else echo "ERROR: number of generations must be defined to calculate window size"; exit
                 fi
             fi
-            echo "COMMAND: $scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir" >> $logfile
-            $scriptdir/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d $scriptdir >> $logfile
+            echo "COMMAND: ${maindir}/scripts/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d ${maindir}" >> $logfile
+            ${maindir}/scripts/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d ${maindir} >> $logfile
             ;;
         4)  if [ -z $snptable ] || [ ! -e $snptable ]; then echo "ERROR: must choose valid snptable (--snptable parameter $snptable is not defined or does not exist)"; exit 1; fi
             chrom=$(head -1 $snptable | cut -f1 -d',')
             freqs=$outdir/$(basename $bamfile)".$chrom.freqs"
             if [ ! -e $freqs ]; then echo "ERROR: haplotype frequencies file $freqs not found!"; exit 1; fi
-            echo "COMMAND: $scriptdir/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d $scriptdir" >> $logfile
-            $scriptdir/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d $scriptdir >> $logfile
+            echo "COMMAND: ${maindir}/scripts/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d ${maindir}" >> $logfile
+            ${maindir}/scripts/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d ${maindir} >> $logfile
             ;;
         * ) echo "ERROR: $task is not a defined task number"; usage
             exit 1

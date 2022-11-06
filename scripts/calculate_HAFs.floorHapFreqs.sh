@@ -8,7 +8,7 @@ usage()
                     [ -s snptable ]
                     [ -p poolSize=100 ]
                     [ -o outdir=<dirname freqfile> ]
-                    [ -d scriptdir=<dirname of this script> ]
+                    [ -d maindir=<main directory of HAF-pipe> ]
                     [ -h help ]
 "
 }
@@ -18,7 +18,7 @@ if [ $# -lt 1 ]; then usage; exit; fi
 #      Command Line Arguments
 # ==================================================================================================
 
-scriptdir=$(dirname "$0")
+maindir=$(dirname "$0")/..
 poolSize=100
 
 while [ "$1" != "" ]; do
@@ -35,8 +35,8 @@ while [ "$1" != "" ]; do
         -o | --outdir )         shift
                                 outdir=$1
                                 ;;
-         -d | --scriptdir )      shift
-                                scriptdir=$1
+         -d | --maindir )       shift
+                                maindir=$1
                                 ;;
         -h | --help )           usage
                                 exit
@@ -63,9 +63,11 @@ echo "snps are: $snptable"
 if [ ! -e ${snptable}.bgz ]; then
      if [ ! -e ${snptable}.numeric ]; then
         if [ ! -e ${snptable}.alleleCts ]; then
-            echo "counting alleles in $snptable"; $scriptdir/count_SNPtable.sh $snptable
+            echo "counting alleles in $snptable"
+            ${maindir}/scripts/count_SNPtable.sh $snptable
         fi
-        echo "making numeric version of $snptable"; Rscript $scriptdir/numeric_SNPtable.R $snptable
+        echo "making numeric version of $snptable"
+        Rscript ${maindir}/scripts/numeric_SNPtable.R $snptable
     fi
     echo "bgzipping and indexing $snptable";
     tail -n +2 ${snptable}.numeric | tr ',' '\t' | awk -v chrom="$chrom" '{

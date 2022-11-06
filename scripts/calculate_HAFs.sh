@@ -10,7 +10,7 @@ usage()
                       [ -f freqfile ]
                       [ -s snptable ]
                       [ -o outdir=<dirname freqfile> ]
-                      [ -d scriptdir=<dirname of this script> ]
+                      [ -d maindir=<main directory of HAF-pipe> ]
                       [ -h help ]
 "
 }
@@ -20,7 +20,7 @@ if [ $# -lt 1 ]; then usage; exit; fi
 #      Command Line Arguments
 # ==================================================================================================
 
-scriptdir=$(dirname "$0")
+maindir=$(dirname "$0")/..
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -33,8 +33,8 @@ while [ "$1" != "" ]; do
         -o | --outdir )         shift
                                 outdir=$1
                                 ;;
-         -d | --scriptdir )      shift
-                                scriptdir=$1
+         -d | --maindir )       shift
+                                maindir=$1
                                 ;;
         -h | --help )           usage
                                 exit
@@ -59,10 +59,11 @@ echo "snps are: $snptable"
 
 if [ ! -e ${snptable}.numeric.bgz ]; then
     if [ ! -e ${snptable}.alleleCts ]; then
-        echo "counting alleles in $snptable"; $scriptdir/count_SNPtable.sh $snptable
+        echo "counting alleles in $snptable"
+        ${maindir}/scripts/count_SNPtable.sh $snptable
     fi
     echo "preparing $snptable for allele frequency calculation"
-    $scriptdir/prepare_SNPtable_for_HAFcalc.sh $snptable
+    ${maindir}/scripts/prepare_SNPtable_for_HAFcalc.sh $snptable
 fi
 
 echo "pos,af" > $outfile

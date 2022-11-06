@@ -5,12 +5,12 @@
 ## the frequency of alt alleles among called genotypes #
 ########################
 snptable=${1}
-scriptdir=$(dirname "$0")
+maindir=$(dirname "$0")/..
 #########################
 
 if [ ! -e ${snptable}.numeric ]; then
     echo "making numeric version of $snptable";
-    Rscript $scriptdir/numeric_SNPtable.R $snptable
+    Rscript ${maindir}/scripts/numeric_SNPtable.R $snptable
 fi
 
 echo "bgzipping ${snptable}.numeric"

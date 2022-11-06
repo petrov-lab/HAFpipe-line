@@ -24,7 +24,7 @@ snptable=${1}
 winsize=${2:-20}
 mode=${3:-0}
 outfile=${4:-$snptable.npute}
-nputedir=${5:-"$(dirname $0)/Extra/NPUTEv1"}
+nputedir=${5:-"$(dirname $0)/../NPUTEv1"}
 
 tail -n +2 ${snptable} | cut -f3- -d',' | tr 'N' '?' > ${snptable}.nputeIN
 if [ "$mode" = 1 ]; then

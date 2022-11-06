@@ -27,8 +27,8 @@ HAFpipe_wrapper.sh
     [ -t --tasks ]          comma-separated list of tasks to run
     [ -l --logfile ]        name of file to write log to
                                 - default: HAFpipe-log.`date +%Y-%m-%d.%H%M%S`
-    [ -d --scriptdir ]      directory in which HAF-pipe scripts are located; tasks:1,2,3,4
-                                - default: directory of wrapper script
+    [ -d --maindir   ]      directory in which HAF-pipe is located; tasks:1,2,3,4
+                                - default: directory of the main script
     [ -o --outdir ]         output directory; tasks:1,3,4
                                 - default: current directory
     [ -v --vcf ]            a multi-sample VCF file of each individual founder in the starting population; tasks:1

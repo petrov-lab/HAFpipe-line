@@ -13,8 +13,7 @@ usage()
     echo "usage: infer_haplotype_freqs.sh
         [ -o --outdir ]     output directory for .${chrom}.freqs files;
 
-        [ -d --scriptdir ]  directory in which HAF-pipe scripts are located;
-                            #(default: directory of this script )
+        [ -d --maindir ]    directory where HAF-pipe is located
 
         [ -s --snptable ]   snp table to use for calculating haplotype and allele frequencies; tasks:2,3,4
                             #format:
@@ -24,7 +23,7 @@ usage()
                             #nameofChrom must match a chromosome in the supplied reference fasta and a mapped chromosome in the supplied bamfile
 
         [ -m --method ]     method used for imputation;
-                            #the script will look for the file ${snptable}.${method} and will use this to estimate haplotype frequencies
+                            #the script will look for the file <snptable>.<method> and will use this to estimate haplotype frequencies
                             #if this file does not exist, an error will be thrown
                             #method can be '' (ie. to infer freqs with an un-imputed SNP table)
 
@@ -49,15 +48,15 @@ if [ $# -lt 1 ]; then usage; exit; fi
 #      Command Line Arguments
 # ==================================================================================================
 
-scriptdir=$(dirname "$0")
+maindir=$(dirname "$0")/..
 wins=1000
 method=''
 encoding="illumina"
 
 while [ "$1" != "" ]; do
     case $1 in
-        -d | --scriptdir )      shift
-                                scriptdir=$1
+        -d | --maindir )        shift
+                                maindir=$1
                                 ;;
         -o | --outdir )         shift
                                 outdir=$1
@@ -96,7 +95,7 @@ echo -e "********\ninferring haplotype freqs for \n[ $bamfile ]\n
 using haplotypes in \n[ $snptable ]\n
 with ${wins}kb windows and $encoding base quality encoding\n*********"
 if [ -z "$outdir" ]; then outdir=$(dirname $bamfile); fi
-if [ ! -f ${snptable}.idx ]; then  $scriptdir/index_snp_table $snptable 50000; fi
+if [ ! -f ${snptable}.idx ]; then  ${maindir}/scripts/index_snp_table $snptable 50000; fi
 
 # ==================================================================================================
 #      Main

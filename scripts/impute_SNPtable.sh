@@ -4,11 +4,14 @@
 #      IMPUTE ALLELES IN SNP FILE
 # ==================================================================================================
 
+maindir=$(dirname "$0")/..
+
 snpFile=${1}
 nofFounders=$(( $(head -1 $snpFile | tr ',' ' ' | wc -w) - 2 ))
 
 if [ ! -f ${snps}.alleleCts ]; then
-    echo "counting alleles in $snps"; count_SNPtable.sh $snps
+    echo "counting alleles in $snps"
+    ${maindir}/scripts/count_SNPtable.sh $snps
 fi
 
 posCol=$(head -1 $snpFile.alleleCts | tr ',' '\n' | awk '($1=="pos"){print NR}')
