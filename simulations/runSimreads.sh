@@ -4,7 +4,7 @@
 ## VARS
 #########
 snps=${1}
-outFile=${2} 
+outFile=${2}
 cov=${3}
 err=${4}
 ref=${5}
@@ -20,12 +20,12 @@ outBase=$(basename $outFile)
 #######
 chrom=$(head -1 $snps | tr ',' '\t' | cut -f1 )
 nofFounderChroms=$(( $(head -1 $snps | tr ',' ' ' | wc -w) - 2 ))
-if [ -e $indivProportionsFile ]; then 
-		echo "pooling individuals in SNP table according to proportions in $indivProportionsFile"
-		haplotypes=$(echo $(cat $indivProportionsFile | cut -f2 -d' '))
-	else
-		echo "pooling $nofFounderChroms evenly for sequencing"
-		haplotypes=$(yes "$(echo $nofFounderChroms | awk '{print 1/$1}') " | head -n $nofFounderChroms | tr -d '\n') ## EVEN POOL
+if [ -e $indivProportionsFile ]; then
+        echo "pooling individuals in SNP table according to proportions in $indivProportionsFile"
+        haplotypes=$(echo $(cat $indivProportionsFile | cut -f2 -d' '))
+    else
+        echo "pooling $nofFounderChroms evenly for sequencing"
+        haplotypes=$(yes "$(echo $nofFounderChroms | awk '{print 1/$1}') " | head -n $nofFounderChroms | tr -d '\n') ## EVEN POOL
 fi
 ref_end=$(samtools faidx $ref $chrom | tail -n +2 | sed 's/\S//' |  wc -c)
 regionEnd=$(( $ref_end - 451 ))  ## can only simulate with enough room to make a paired end plus insert
@@ -67,11 +67,11 @@ cd $dir
 ##########
 
 if [ $nondros > 0 ]; then
-	echo "@SQ	SN:$chrom	LN:$ref_end" > ${outFile}.sam.new
-	echo "@PG	ID:simreads PN:simreads VN:1.0" >> ${outFile}.sam.new
-	grep -v "^@" ${outFile}.sam >> ${outFile}.sam.new
+    echo "@SQ	SN:$chrom	LN:$ref_end" > ${outFile}.sam.new
+    echo "@PG	ID:simreads PN:simreads VN:1.0" >> ${outFile}.sam.new
+    grep -v "^@" ${outFile}.sam >> ${outFile}.sam.new
 
-	mv ${outFile}.sam.new ${outFile}.sam
+    mv ${outFile}.sam.new ${outFile}.sam
 fi
 
 samtools view -Suh ${outFile}.sam | \
@@ -81,5 +81,3 @@ rm ${outFile}.sam
 rm ${outFile}.actual.freqs
 rm ${outFile}.true.freqs
 rm ${outFile}.seed
-
-

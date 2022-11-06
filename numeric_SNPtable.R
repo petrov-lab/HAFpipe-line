@@ -4,7 +4,7 @@ args<-commandArgs(TRUE)
 library(data.table)
 
 ## FILES
-snpFile <- args[1] 
+snpFile <- args[1]
 snpInfoFile <- paste0(snpFile,".alleleCts")
 ###### snpInfoFile must be in the same row-order as snpFile, and have a column for identity of the alt allele
 
@@ -24,4 +24,3 @@ rownames(numericSNPs)<-SNPs[,1]
 headers<-paste(c(chrom,colnames(numericSNPs)),collapse=",")
 cat(paste(headers,'\n',sep=""),file=paste(snpFile,".numeric",sep=""))
 write.table(numericSNPs,file=paste(snpFile,".numeric",sep=""),append=TRUE,quote=FALSE,sep=",",row.names=TRUE,col.names=FALSE)
-

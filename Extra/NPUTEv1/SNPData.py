@@ -65,8 +65,8 @@ class SNPData:
         print "Reading in SNP data from '%s'..." % inFile,
         snps = []
         nucs = []
-        self.numSamps = -1        
-        
+        self.numSamps = -1
+
         lines = file(inFile, 'r').readlines()
         for i in xrange(len(lines)):
             line = self.removeExtraChars(lines[i])
@@ -78,11 +78,11 @@ class SNPData:
             major, minor = self.getAlleles(line, i)
             if minor == '':
                 snp = line.replace(major, MAJ)
-            else:    
+            else:
                 snp = (line.replace(major, MAJ)).replace(minor, MIN)
             snps += [snp]
             nucs += [(major,minor)]
-            
+
         self.snps = array(snps)
         self.sdps = set(snps)
         self.nucs = array(nucs)
@@ -104,10 +104,10 @@ class SNPData:
             cts[b]=s.count(b)
         major = sorted(cts, key=cts.get, reverse=True)[0]
         minor = sorted(cts, key=cts.get, reverse=True)[1]
-        
+
         return major, minor
-                
-        
+
+
     def removeExtraChars(self,s):
         '''
         Helper function for reading in data.  Removes formatting characters.
@@ -118,7 +118,7 @@ class SNPData:
         s = s.replace('\r','')
         s = s.replace('\t','')
         return s
-        
+
     def genMismatchVectors(self):
         '''
         Generates a pair-wise mismatch vector for each SDP and stores it in a dictionary.
@@ -133,7 +133,7 @@ class SNPData:
         self.vectors = dict()
 
         for sdp in self.sdps:
-            dM = []   
+            dM = []
             p = []
             c = []
             for i in xrange(n):
@@ -147,7 +147,7 @@ class SNPData:
                     c += [1]
                     p += [1]
 
-            q = 0             
+            q = 0
             for i in xrange(n):
                 if p[i] == 0:
                     dM += p[i+1:]
@@ -155,10 +155,10 @@ class SNPData:
                     dM += c[i+1:]
                 else:
                     dM += o[i+1:]
-            
+
             self.vectors[sdp] = array(dM,uint16)
         print "Done"
-        
+
     def incorporateChanges(self):
         '''
         Uses the changes dictionary to replace unknowns with imputed values.
@@ -168,23 +168,23 @@ class SNPData:
         for loc,val in self.changes.iteritems():
             locI, samp = loc
             snp = snps[locI]
-            
+
             if val == MIN:
                 iVal = I_MIN
             elif val == MAJ:
                 iVal = I_MAJ
             else:
                 print "unknown imputed allele "+str(val)+" at "+str(loc)
-            
+
             snps[locI] = snp[0:samp] + iVal + snp[samp+1:]
-        print "Done"         
-        
+        print "Done"
+
     def outputData(self, outFile): # revised to remove bottleneck: Serge Batalov
         '''
         Outputs the SNP data to the specified file in csv format.  Lower-case values are imputed.
         '''
         print "Writing imputed data to '%s'..." % outFile,
-               
+
         fi = file(outFile,'w')
         for i in xrange(len(self.snps)):
             snp = self.snps[i]
@@ -203,17 +203,17 @@ class SNPData:
                 out += ',' + nuc
             fi.write(out[1:] + '\n')
         print "Done"
-        
+
     def genExtractIndices(self):
         '''
         Generate lookup table of indices for the rows of a matrix stored in upper-triangular form.
         '''
         print 'Generating indices for triangular matrix row extraction...',
         numSamps = self.numSamps
-        
+
         extractIndices = zeros((numSamps,numSamps),int)
         for samp in xrange(numSamps):
-            indices = []  
+            indices = []
 
             j = samp-1
             for i in xrange(samp):
@@ -222,11 +222,11 @@ class SNPData:
 
             indices += range(j,j+numSamps-samp)
             extractIndices[samp] = indices
-        
+
         self.extractIndices = extractIndices
         print 'Done'
 
-    
+
     def extractRow(self,tM,rowNum):
         '''
         Extracts a row from an upper-triangular mismatch matrix for the dataset.  Sets value
@@ -235,4 +235,4 @@ class SNPData:
         '''
         row = take(tM,self.extractIndices[rowNum])
         row[rowNum] = INF
-        return row        
+        return row

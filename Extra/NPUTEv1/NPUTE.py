@@ -49,7 +49,7 @@ def main():
     '''
     Parses arguments, loads data, calls proper functions, and outputs results.
     '''
-    
+
     options = {MODE_TYPE: IMP, # Mode - imputation or window test
                SING_WIN : '', # Single Window
                RANGE_WIN : '', # Window Range - 'start:end'
@@ -57,8 +57,8 @@ def main():
                IN_FILE : 'in.csv', # Input File
                OUT_FILE : 'out.csv' # Output File
                }
-               
-               
+
+
     optlist, args = getopt.getopt(sys.argv[1:], 'm:w:W:r:i:o:')
     for opt in optlist:
         options[opt[0]] = opt[1]
@@ -76,7 +76,7 @@ def main():
         start,stop = options[RANGE_WIN].split(':')
         start,stop = int(start),int(stop)
         L = range(start,stop+1)
-    winFile = options[FILE_WIN]        
+    winFile = options[FILE_WIN]
     if not isEmpty(winFile):
         if not os.path.exists(winFile):
             print "Window file '%s' not found." % winFile
@@ -85,7 +85,7 @@ def main():
         L += [int(line) for line in lines]
     if not isEmpty(options[SING_WIN]):
         L += [int(options[SING_WIN])]
-    L.sort()        
+    L.sort()
 
     mode = options[MODE_TYPE]
     if mode == IMP:
@@ -99,8 +99,8 @@ def main():
             print 'Test windows not specified.'
             sys.exit(1)
         testWindows(snpData, L, options[OUT_FILE])
-        
-        
+
+
 def isEmpty(x):
     '''
     Helper function to test if an object is empty (has 0 length).
@@ -128,15 +128,15 @@ def testWindows(snpData, Ls, outFile):
     t = int(time.time()-start + 0.5)
     print 'Imputed %d called values over %d windows in %dm %ds.' % (c,len(Ls),t/60,t%60)
     outputWinAccs(Ls,c,corrects,outFile)
-    
+
 
 def impute(snpData, L):
     '''
     Function that slides the window and calls other functions to do the actual imputation.
     '''
-    
+
     global count
-    
+
     snpData.changes = dict()
     count = 0
     snps = snpData.snps
@@ -144,7 +144,7 @@ def impute(snpData, L):
     numSNPs = len(snps)
 
     print "Imputing with window size " +  str(L) + "...",
-    
+
     vectorLength = len(vectors.values()[0])
     vectorQueue = CircularQueue([L], vectorLength)
     acc = zeros(vectorLength, uint16)
@@ -157,20 +157,20 @@ def impute(snpData, L):
 
     # Begin impute
     for i in xrange(numSNPs):
-        
+
         if i+L < numSNPs:
             snpVector = vectors[snps[i+L]]
             vectorQueue.enqueue(snpVector)
         else:
             vectorQueue.enqueue(zeros(vectorLength,uint16))
-            
+
         top,bottom = vectorQueue.getEnds(0)
         add(acc,top,acc)
         subtract(acc,bottom,acc)
         snp = snps[i]
         if '?' in snp:
             imputeSNP(snpData,i,acc,snp)
-                         
+
     print "Done"
     return count
 
@@ -180,10 +180,10 @@ def imputeSNP(snpData,locI,mmv,snp):
     '''
     global count
 
-    for samp in xrange(snpData.numSamps):   
+    for samp in xrange(snpData.numSamps):
         if snp[samp] == '?':
 
-            score = snpData.extractRow(mmv,samp) 
+            score = snpData.extractRow(mmv,samp)
 
             sA = argsort(score)
             impNuc = getMinImp(snp,sA[0:-1],score)
@@ -197,7 +197,7 @@ def testImpute(snpData, Ls):
     Function that slides the window(s) and calculates accuracy of imputation
     on all called values.
     '''
-    
+
     global corrects
     global count
 
@@ -210,9 +210,9 @@ def testImpute(snpData, Ls):
 
     count = 0
     corrects = zeros(len(Ls))
-    
+
     vectorLength = len(vectors.values()[0])
- 
+
     vectorQueue = CircularQueue(Ls,vectorLength)
     acc = zeros((len(Ls),vectorLength),uint16)
     # Initialize queue
@@ -229,7 +229,7 @@ def testImpute(snpData, Ls):
             vectorQueue.enqueue(vectors[snps[i+L]])
         else:
             vectorQueue.enqueue(zeros(vectorLength,uint16))
-            
+
         mid = vectorQueue.getMid()
         snp = snps[i]
 
@@ -238,13 +238,13 @@ def testImpute(snpData, Ls):
             add(acc[j],top,acc[j])
             subtract(acc[j],bottom,acc[j])
             imputeSNPT(snpData,i,acc[j]-mid,snp,j)
-    
+
     print 'Done'
 
-    return count, corrects    
+    return count, corrects
 
 
-    
+
 def imputeSNPT(snpData,locI,mmv,snp,j):
     '''
     Uses the window's mismatch vector to test impute each known value in SNP and
@@ -253,26 +253,26 @@ def imputeSNPT(snpData,locI,mmv,snp,j):
     global count
     global corrects
 
-    # This is done so that singleton values are not attempted to be imputed    
+    # This is done so that singleton values are not attempted to be imputed
     if snp.count('1') == 1:
         checkOne = True
     else:
         checkOne = False
-    for samp in xrange(snpData.numSamps):   
+    for samp in xrange(snpData.numSamps):
         if snp[samp] != '?' and not (checkOne and snp[samp] == 1):
 
-            if j == 0:                           
+            if j == 0:
                 count += 1
-                 
-            score = snpData.extractRow(mmv,samp) 
+
+            score = snpData.extractRow(mmv,samp)
 
             sA = argsort(score)
             impNuc = getMinImp(snp,sA[0:-1],score)
-            
+
             if impNuc == snp[samp]:
                 corrects[j] += 1
-                
-  
+
+
 
 def getMinImp(snp, sA, score):
     '''
@@ -284,7 +284,7 @@ def getMinImp(snp, sA, score):
     winner = '0'
 
     for i in sA:
-        
+
         m = score[i]
 
         if snp[i] != '?':
@@ -298,7 +298,7 @@ def getMinImp(snp, sA, score):
                         winner = snp[i]
                         points = 1
                     else:
-                        points -= 1                    
+                        points -= 1
 
             lastM = m
 
@@ -319,13 +319,3 @@ def outputWinAccs(Ls,count,corrects,outFile):
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-        
-                    
-                    
-    
-
