@@ -1,5 +1,12 @@
 args<-commandArgs(TRUE)
 
+# DEPRECATED
+# This script reads the whole tables into memory at once, which is a problem in itself,
+# but also for larger datasets fails even with enough memory (~150GB in our tests),
+# as we reach the limit of 2^31-1 values that R can handle in a single table...
+# See https://github.com/petrov-lab/HAFpipe-line/issues/7 for details.
+# We hence re-implemented this step in Python - use the .py script instead!
+
 ### libraries
 library(data.table)
 

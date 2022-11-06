@@ -10,7 +10,8 @@ maindir=$(dirname "$0")/..
 
 if [ ! -e ${snptable}.numeric ]; then
     echo "making numeric version of $snptable";
-    Rscript ${maindir}/scripts/numeric_SNPtable.R $snptable
+    # Rscript ${maindir}/scripts/numeric_SNPtable.R $snptable
+    python ${maindir}/scripts/numeric_SNPtable.py $snptable
     if [ ! -e ${snptable}.numeric ]; then
         echo "creating ${snptable}.numeric failed"
         exit 1
