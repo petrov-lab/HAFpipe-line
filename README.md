@@ -1,6 +1,6 @@
 # HAF-pipe 🏂
 
-HAF-pipe is a bash- and R-based pipeline to calculate haplotype-inferred allele frequencies from pool-seq data and founder SNP profiles.
+HAF-pipe is a bash- and python-based pipeline to calculate haplotype-inferred allele frequencies from pool-seq data and founder SNP profiles.
 
 ## Paper
 
@@ -20,15 +20,14 @@ For further references, such as references of the imputation methods, please see
 
 ## Dependencies
 
-  1. HARP (download from https://bitbucket.org/dkessner/harp )
-  2. R version >= 3.2 (in your path) + library: data.table
+  1. HARP (download from https://bitbucket.org/dkessner/harp)
+  2. Python 3 (including numpy for the 'npute' method of Task 2)
   3. tabix and bgzip (http://www.htslib.org/download/)
-  4. python2 and numpy (for the 'npute' method of task 2 only)
 
 ## Tasks
 
   * 1 - make SNP table from VCF
-  * 2 - impute SNP table
+  * 2 - impute SNP table, if needed
   * 3 - infer haplotype frequencies
   * 4 - calculate allele frequencies
 
