@@ -20,8 +20,13 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+import sys
 import time
 from numpy import *
+
+# Fix for python 2 --> python 3 transition
+if sys.version_info[0] > 2:
+    xrange = range
 
 #Infinite Number (for acc array)
 INF = 2**16-1 # set for unsigned 16-bit integers used in acc array
@@ -53,27 +58,27 @@ class SNPData:
         self.genMismatchVectors()
         self.genExtractIndices()
         t = int(time.time()-start+0.5)
-        print 'Number of Samples: %d' % self.numSamps
-        print 'Number of SNPs: %d' % len(self.snps)
-        print 'Number of SDPs: %d' % len(self.sdps)
-        print 'Time to Process: %d m %d s\n' % (t/60,t%60)
+        print( 'Number of Samples: %d' % self.numSamps )
+        print( 'Number of SNPs: %d' % len(self.snps) )
+        print( 'Number of SDPs: %d' % len(self.sdps) )
+        print( 'Time to Process: %d m %d s\n' % (t/60,t%60) )
 
     def readInData(self, inFile):
         '''
         Reads in data file and normalizes alleles.
         '''
-        print "Reading in SNP data from '%s'..." % inFile,
+        print( "Reading in SNP data from '%s'..." % inFile )
         snps = []
         nucs = []
         self.numSamps = -1
 
-        lines = file(inFile, 'r').readlines()
+        lines = open(inFile, 'r').readlines()
         for i in xrange(len(lines)):
             line = self.removeExtraChars(lines[i])
             if self.numSamps == -1:
                 self.numSamps = len(line)
             elif self.numSamps != len(line):
-                print '\nSNP %d has an inconsistent number of samples.' % (i+1)
+                print( '\nSNP %d has an inconsistent number of samples.' % (i+1) )
                 sys.exit(1)
             major, minor = self.getAlleles(line, i)
             if minor == '':
@@ -86,7 +91,7 @@ class SNPData:
         self.snps = array(snps)
         self.sdps = set(snps)
         self.nucs = array(nucs)
-        print "Done"
+        print( "Done" )
 
     def getAlleles(self, s, i):
         '''
@@ -126,7 +131,7 @@ class SNPData:
         Mismatch = 2
         Unknown = 1
         '''
-        print "Generating pair-wise mismatch vectors...",
+        print( "Generating pair-wise mismatch vectors..." )
 
         n = self.numSamps
         o = [1 for i in range(n)]
@@ -157,15 +162,17 @@ class SNPData:
                     dM += o[i+1:]
 
             self.vectors[sdp] = array(dM,uint16)
-        print "Done"
+        print( "Done" )
 
     def incorporateChanges(self):
         '''
         Uses the changes dictionary to replace unknowns with imputed values.
         '''
-        print "Incorporating imputed values into the SNP data...",
+        print( "Incorporating imputed values into the SNP data..." )
         snps = self.snps
-        for loc,val in self.changes.iteritems():
+        # Inefficient in Python 2. Used to be iteritems() instead...
+        # Bit painful for the migration, but we can live with it.
+        for loc,val in self.changes.items():
             locI, samp = loc
             snp = snps[locI]
 
@@ -174,18 +181,18 @@ class SNPData:
             elif val == MAJ:
                 iVal = I_MAJ
             else:
-                print "unknown imputed allele "+str(val)+" at "+str(loc)
+                print( "unknown imputed allele "+str(val)+" at "+str(loc) )
 
             snps[locI] = snp[0:samp] + iVal + snp[samp+1:]
-        print "Done"
+        print( "Done" )
 
     def outputData(self, outFile): # revised to remove bottleneck: Serge Batalov
         '''
         Outputs the SNP data to the specified file in csv format.  Lower-case values are imputed.
         '''
-        print "Writing imputed data to '%s'..." % outFile,
+        print( "Writing imputed data to '%s'..." % outFile )
 
-        fi = file(outFile,'w')
+        fi = open(outFile,'w')
         for i in xrange(len(self.snps)):
             snp = self.snps[i]
             out = ''
@@ -202,13 +209,13 @@ class SNPData:
                     nuc = allele  ### EDIT SIG 10/23/2019 - allows ambiguous symbols to remain in SNP table
                 out += ',' + nuc
             fi.write(out[1:] + '\n')
-        print "Done"
+        print( "Done" )
 
     def genExtractIndices(self):
         '''
         Generate lookup table of indices for the rows of a matrix stored in upper-triangular form.
         '''
-        print 'Generating indices for triangular matrix row extraction...',
+        print( 'Generating indices for triangular matrix row extraction...' )
         numSamps = self.numSamps
 
         extractIndices = zeros((numSamps,numSamps),int)
@@ -224,7 +231,7 @@ class SNPData:
             extractIndices[samp] = indices
 
         self.extractIndices = extractIndices
-        print 'Done'
+        print( 'Done' )
 
 
     def extractRow(self,tM,rowNum):

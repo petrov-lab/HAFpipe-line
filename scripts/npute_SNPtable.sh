@@ -10,9 +10,10 @@ then
     echo "format: npute_SNPtable.sh [snptable] [npute_dir] [winsize=20]";
     echo 'One or more variables are undefined. Please try again.
 
-    **NPUTE python scripts can be downloaded from: http://compgen.unc.edu/wp/?page_id=57
-    **the versions included with this repository have been slightly edited to accommodate ambiguous base codes
-    **note that python 2 and the numpy package are required for npute'
+    ** NPUTE python scripts can be downloaded from: http://compgen.unc.edu/wp/?page_id=57
+    ** The versions included with this repository have been slightly edited to accommodate ambiguous
+    ** base codes, as well as migrated to also work in Python 3.
+    ** Note that the numpy package is required for npute.'
     exit 1
 fi
 

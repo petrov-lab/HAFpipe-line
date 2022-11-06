@@ -30,6 +30,11 @@ from SNPData import *
 from CircularQueue import *
 from numpy import *
 
+# Fix for python 2 --> python 3 transition.
+# We want to keep both, so that pyton 2 can also use the xrange generator.
+if sys.version_info[0] > 2:
+    xrange = range
+
 #Option Names
 MODE_TYPE = '-m'
 SING_WIN = '-w'
@@ -66,7 +71,7 @@ def main():
     # Get input SNPs
     inFile = options[IN_FILE]
     if not os.path.exists(inFile):
-        print "Input file '%s' not found." % inFile
+        print( "Input file '%s' not found." % inFile )
         sys.exit(1)
     snpData = SNPData(inFile)
 
@@ -79,9 +84,9 @@ def main():
     winFile = options[FILE_WIN]
     if not isEmpty(winFile):
         if not os.path.exists(winFile):
-            print "Window file '%s' not found." % winFile
+            print( "Window file '%s' not found." % winFile )
             sys.exit(1)
-        lines = file(winFile,'r').readlines()
+        lines = open(winFile,'r').readlines()
         L += [int(line) for line in lines]
     if not isEmpty(options[SING_WIN]):
         L += [int(options[SING_WIN])]
@@ -90,13 +95,13 @@ def main():
     mode = options[MODE_TYPE]
     if mode == IMP:
         if isEmpty(options[SING_WIN]):
-            print 'Imputation window not specified.'
+            print( 'Imputation window not specified.' )
             sys.exit(1)
         L = int(options[SING_WIN])
         imputeData(snpData, L, options[OUT_FILE])
     elif mode == TST:
         if isEmpty(L):
-            print 'Test windows not specified.'
+            print( 'Test windows not specified.' )
             sys.exit(1)
         testWindows(snpData, L, options[OUT_FILE])
 
@@ -115,7 +120,7 @@ def imputeData(snpData, L, outFile):
     c = impute(snpData, L)
     t = int(time.time()-start + 0.5)
     snpData.incorporateChanges()
-    print 'Imputed %d unknowns in %dm %ds.' % (c,t/60,t%60)
+    print( 'Imputed %d unknowns in %dm %ds.' % (c,t/60,t%60) )
     snpData.outputData(outFile)
 
 def testWindows(snpData, Ls, outFile):
@@ -126,7 +131,7 @@ def testWindows(snpData, Ls, outFile):
     start = time.time()
     c, corrects = testImpute(snpData, Ls)
     t = int(time.time()-start + 0.5)
-    print 'Imputed %d called values over %d windows in %dm %ds.' % (c,len(Ls),t/60,t%60)
+    print( 'Imputed %d called values over %d windows in %dm %ds.' % (c,len(Ls),t/60,t%60) )
     outputWinAccs(Ls,c,corrects,outFile)
 
 
@@ -143,9 +148,9 @@ def impute(snpData, L):
     vectors = snpData.vectors
     numSNPs = len(snps)
 
-    print "Imputing with window size " +  str(L) + "...",
+    print( "Imputing with window size " +  str(L) + "..." )
 
-    vectorLength = len(vectors.values()[0])
+    vectorLength = len(list(vectors.values())[0])
     vectorQueue = CircularQueue([L], vectorLength)
     acc = zeros(vectorLength, uint16)
 
@@ -171,7 +176,7 @@ def impute(snpData, L):
         if '?' in snp:
             imputeSNP(snpData,i,acc,snp)
 
-    print "Done"
+    print( "Done" )
     return count
 
 def imputeSNP(snpData,locI,mmv,snp):
@@ -206,12 +211,12 @@ def testImpute(snpData, Ls):
     snps = snpData.snps
     numSNPs = len(snps)
 
-    print 'Running imputation window test with %d window sizes...' % len(Ls),
+    print( 'Running imputation window test with %d window sizes...' % len(Ls) )
 
     count = 0
     corrects = zeros(len(Ls))
 
-    vectorLength = len(vectors.values()[0])
+    vectorLength = len(list(vectors.values())[0])
 
     vectorQueue = CircularQueue(Ls,vectorLength)
     acc = zeros((len(Ls),vectorLength),uint16)
@@ -239,7 +244,7 @@ def testImpute(snpData, Ls):
             subtract(acc[j],bottom,acc[j])
             imputeSNPT(snpData,i,acc[j]-mid,snp,j)
 
-    print 'Done'
+    print( 'Done' )
 
     return count, corrects
 
@@ -309,13 +314,13 @@ def outputWinAccs(Ls,count,corrects,outFile):
     Outputs the accuracy of imputation on all called values for each window size tested
     to a CSV file.
     '''
-    print "Writing estimated window accuries to '%s'..." % outFile,
+    print( "Writing estimated window accuries to '%s'..." % outFile )
     accs = corrects/float(count)
     out = ''
     for i in xrange(len(Ls)):
         out += '%d,%f\n' % (Ls[i],accs[i])
-    file(outFile,'w').write(out)
-    print "Done"
+    open(outFile,'w').write(out)
+    print( "Done" )
 
 if __name__ == "__main__":
     main()
