@@ -12,7 +12,10 @@ usage()
     4) keep all sites regardless of whether they are segregating in the subset (default:false)
     5) minimum number of called genotypes to keep site'
 }
-if [ $# -lt 3 ]; then usage; exit; fi
+if [ $# -lt 3 ]; then
+    usage
+    exit 1
+fi
 
 # ==================================================================================================
 #      Command Line Arguments
@@ -38,7 +41,7 @@ while [ "$1" != "" ]; do
                                 mincalls=$1
                                 ;;
         -h | --help )           usage
-                                exit
+                                exit 1
                                 ;;
         * )                     echo "unknown flag $1"
                                 usage

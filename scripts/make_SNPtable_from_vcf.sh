@@ -23,7 +23,10 @@ usage()
        if not supplied, all founders will be included
 "
 }
-if [ $# -lt 1 ]; then usage; exit; fi
+if [ $# -lt 1 ]; then
+    usage
+    exit 1
+fi
 
 # ==================================================================================================
 #      Command Line Arguments
@@ -62,7 +65,7 @@ while [ "$1" != "" ]; do
                                 threads=$1
                                 ;;
         -h | --help )           usage
-                                exit
+                                exit 1
                                 ;;
         * )                     echo "unknown flag $1"
                                 usage
@@ -71,7 +74,9 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -z $snptable ]; then snptable=$(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable; fi
+if [ -z $snptable ]; then
+    snptable=$(echo $vcf | sed 's/.gz$//' | sed 's/.vcf//').$chrom.snptable
+fi
 
 # ==================================================================================================
 #      Main

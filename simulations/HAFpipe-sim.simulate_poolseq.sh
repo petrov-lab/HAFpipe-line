@@ -35,7 +35,10 @@ usage()
 #      Command Line Arguments
 # ==================================================================================================
 
-if [ "$1" == "" ]; then usage; exit; fi
+if [ "$1" == "" ]; then
+    usage
+    exit 1
+fi
 
 ## Parse User Parameters
 while [ "$1" != "" ]; do
@@ -67,7 +70,7 @@ while [ "$1" != "" ]; do
                                 outDir=$1
                                 ;;
        -h | --help )           usage
-                                exit
+                                exit 1
                                 ;;
         * )                     echo unknown flag $1 ; usage
                                 exit 1

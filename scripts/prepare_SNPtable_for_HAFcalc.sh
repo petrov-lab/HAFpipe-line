@@ -11,6 +11,10 @@ maindir=$(dirname "$0")/..
 if [ ! -e ${snptable}.numeric ]; then
     echo "making numeric version of $snptable";
     Rscript ${maindir}/scripts/numeric_SNPtable.R $snptable
+    if [ ! -e ${snptable}.numeric ]; then
+        echo "creating ${snptable}.numeric failed"
+        exit 1
+    fi
 fi
 
 echo "bgzipping ${snptable}.numeric"

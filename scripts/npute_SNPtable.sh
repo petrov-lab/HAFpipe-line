@@ -13,7 +13,7 @@ then
     **NPUTE python scripts can be downloaded from: http://compgen.unc.edu/wp/?page_id=57
     **the versions included with this repository have been slightly edited to accommodate ambiguous base codes
     **note that python 2 and the numpy package are required for npute'
-    exit
+    exit 1
 fi
 
 # ==================================================================================================

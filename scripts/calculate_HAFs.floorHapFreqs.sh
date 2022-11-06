@@ -12,7 +12,10 @@ usage()
                     [ -h help ]
 "
 }
-if [ $# -lt 1 ]; then usage; exit; fi
+if [ $# -lt 1 ]; then
+    usage
+    exit 1
+fi
 
 # ==================================================================================================
 #      Command Line Arguments
@@ -39,7 +42,7 @@ while [ "$1" != "" ]; do
                                 maindir=$1
                                 ;;
         -h | --help )           usage
-                                exit
+                                exit 1
                                 ;;
         * )                     echo unknown flag $1 ; usage
                                 exit 1
@@ -66,9 +69,20 @@ if [ ! -e ${snptable}.bgz ]; then
             echo "counting alleles in $snptable"
             ${maindir}/scripts/count_SNPtable.sh $snptable
         fi
+
         echo "making numeric version of $snptable"
         Rscript ${maindir}/scripts/numeric_SNPtable.R $snptable
+        if [ ! -e ${snptable}.numeric ]; then
+            echo "creating ${snptable}.numeric failed"
+            exit 1
+        fi
     fi
+
+    # Comment by Lucas Czech:
+    # The following file is weird. In `prepare_SNPtable_for_HAFcalc.sh`, a similar file,
+    # also computed from the `.numeric` table, is called `${snptable}.numeric.bgz` instead,
+    # but computed differently (and named differently). It could be meant to be the same - or not.
+    # Not sure what to make of this, but it smells.
     echo "bgzipping and indexing $snptable";
     tail -n +2 ${snptable}.numeric | tr ',' '\t' | awk -v chrom="$chrom" '{
         alleleCt=NF-1

@@ -14,7 +14,10 @@ usage()
                       [ -h help ]
 "
 }
-if [ $# -lt 1 ]; then usage; exit; fi
+if [ $# -lt 1 ]; then
+    usage
+    exit 1
+fi
 
 # ==================================================================================================
 #      Command Line Arguments
@@ -37,7 +40,7 @@ while [ "$1" != "" ]; do
                                 maindir=$1
                                 ;;
         -h | --help )           usage
-                                exit
+                                exit 1
                                 ;;
         * )                     echo unknown flag $1 ; usage
                                 exit 1
@@ -62,8 +65,13 @@ if [ ! -e ${snptable}.numeric.bgz ]; then
         echo "counting alleles in $snptable"
         ${maindir}/scripts/count_SNPtable.sh $snptable
     fi
+
     echo "preparing $snptable for allele frequency calculation"
     ${maindir}/scripts/prepare_SNPtable_for_HAFcalc.sh $snptable
+    if [ ! -e ${snptable}.numeric.bgz ]; then
+        echo "creating ${snptable}.numeric failed"
+        exit 1
+    fi
 fi
 
 echo "pos,af" > $outfile

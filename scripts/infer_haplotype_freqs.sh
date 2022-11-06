@@ -42,7 +42,10 @@ usage()
         [ -h help ]         show this help screen
 "
 }
-if [ $# -lt 1 ]; then usage; exit; fi
+if [ $# -lt 1 ]; then
+    usage
+    exit 1
+fi
 
 # ==================================================================================================
 #      Command Line Arguments
@@ -80,16 +83,21 @@ while [ "$1" != "" ]; do
                                 wins=$1
                                 ;;
         -h | --help )           usage
-                                exit
+                                exit 1
                                 ;;
-        * )                     echo unknown flag $1 ; usage
+        * )                     echo unknown flag $1
+                                usage
                                 exit 1
     esac
     shift
 done
 
 snptable=${snptable}${method}
-if [ -z "$bamfile" ] || [ -z "$snptable" ] || [ -z "$refseq" ] ; then echo "Missing either bam or snptable or refseq argument. Please try again"; usage; exit; fi
+if [ -z "$bamfile" ] || [ -z "$snptable" ] || [ -z "$refseq" ] ; then
+    echo "Missing either bam or snptable or refseq argument. Please try again"
+    usage
+    exit 1
+fi
 
 echo -e "********\ninferring haplotype freqs for \n[ $bamfile ]\n
 using haplotypes in \n[ $snptable ]\n

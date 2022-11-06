@@ -110,7 +110,10 @@ recombrate=.0000000239
 quantile=18
 gens=""
 
-if [ "$1" == "" ]; then usage; exit; fi
+if [ "$1" == "" ]; then
+    usage
+    exit 1
+fi
 
 ## Parse User Parameters
 while [ "$1" != "" ]; do
@@ -176,7 +179,7 @@ while [ "$1" != "" ]; do
                                 winsize=$1
                                 ;;
         -h | --help )           usage
-                                exit
+                                exit 1
                                 ;;
         * )                     echo unknown flag $1 ; usage
                                 exit 1
@@ -216,13 +219,36 @@ echo "
 
 for task in ${tasks[*]}; do
     case $task in
-        1)  if [ -z $vcf ] || [ ! -e $vcf ]; then echo "ERROR: must supply a valid vcf file (--vcf parameter $vcf is not defined or does not exist)"; exit 1; fi
-            if [ -z $chrom ];  then echo "ERROR: must choose valid chromosome"; exit 1; fi
-            if [ -z $snptable ]; then echo "ERROR: must supply a valid location for writing the snptable file (set the --snptable parameter)"; exit 1; fi
-            if [ ! -e $(dirname $snptable) ]; then echo "ERROR: must supply a valid location for writing the snptable file ( $(dirname $snptable) does not exist)"; exit 1; fi
+
+        # ----------------------------------------------------------------
+        #     Task 1
+        # ----------------------------------------------------------------
+
+        1)  if [ -z $vcf ] || [ ! -e $vcf ]; then
+                echo "ERROR: must supply a valid vcf file (--vcf parameter $vcf is not defined or does not exist)"
+                exit 1
+            fi
+            if [ -z $chrom ];  then
+                echo "ERROR: must choose valid chromosome"
+                exit 1
+            fi
+            if [ -z $snptable ]; then
+                echo "ERROR: must supply a valid location for writing the snptable file (set the --snptable parameter)"
+                exit 1
+            fi
+            if [ ! -e $(dirname $snptable) ]; then
+                echo "ERROR: must supply a valid location for writing the snptable file ( $(dirname $snptable) does not exist)"
+                exit 1
+            fi
+
             echo -e "COMMAND: ${maindir}/scripts/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets" >> $logfile
             ${maindir}/scripts/make_SNPtable_from_vcf.sh -v $vcf -c $chrom -s $snptable --mincalls $mincalls $subsetlist $keephets  >> $logfile
             ;;
+
+        # ----------------------------------------------------------------
+        #     Task 2
+        # ----------------------------------------------------------------
+
         2)  case $impmethod in
                 ".simpute")
                     echo "COMMAND: ${maindir}/scripts/impute_SNPtable.sh ${snptable}" >> $logfile;
@@ -237,11 +263,28 @@ for task in ${tasks[*]}; do
                     exit 1
             esac
             ;;
-        3)  if [ -z $bamfile ] || [ ! -e $bamfile ]; then echo "ERROR: must choose valid bam file"; exit 1; fi
+
+        # ----------------------------------------------------------------
+        #     Task 3
+        # ----------------------------------------------------------------
+
+        3)  if [ -z $bamfile ] || [ ! -e $bamfile ]; then
+                echo "ERROR: must choose valid bam file"
+                exit 1
+            fi
             baifile=$(echo $bamfile | sed 's/$/.bai/')
-            if [ -z $baifile ] || [ ! -e $baifile ]; then echo "ERROR: bamfile $bamfile must be indexed with samtools\n($baifile is empty or does not exist)"; exit 1; fi
-            if [ -z $snptable ] || [ ! -e $snptable ]; then echo "ERROR: must choose valid snptable"; exit 1; fi
-            if [ -z $refseq ] || [ ! -e $refseq ]; then echo "ERROR: must supply valid reference fasta"; exit 1; fi
+            if [ -z $baifile ] || [ ! -e $baifile ]; then
+                echo "ERROR: bamfile $bamfile must be indexed with samtools\n($baifile is empty or does not exist)"
+                exit 1
+            fi
+            if [ -z $snptable ] || [ ! -e $snptable ]; then
+                echo "ERROR: must choose valid snptable"
+                exit 1
+            fi
+            if [ -z $refseq ] || [ ! -e $refseq ]; then
+                echo "ERROR: must supply valid reference fasta"
+                exit 1
+            fi
             if [ "$winsize" == "" ]; then
                 if [ "$gens" != "" ]; then
                     if [ $quantile -lt 100 ] && [ $quantile -gt 0 ]; then
@@ -252,21 +295,43 @@ for task in ${tasks[*]}; do
                             round(qexp(Q/100,1/(L/(R*L*G+1)))/1000)" \
                             $recombrate $chromlength $gens $quantile | cut -f2 -d' ');
                         echo "running harp with window size: $winsize kb"
-                    else echo "ERROR: invalid quantile value. must be between 0 and 100, not $quantile."; exit;
+                    else
+                        echo "ERROR: invalid quantile value. must be between 0 and 100, not $quantile."
+                        exit 1
                     fi
-                else echo "ERROR: number of generations must be defined to calculate window size"; exit
+                else
+                    echo "ERROR: number of generations must be defined to calculate window size"
+                    exit 1
                 fi
             fi
+
             echo "COMMAND: ${maindir}/scripts/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d ${maindir}" >> $logfile
             ${maindir}/scripts/infer_haplotype_freqs.sh -b $bamfile -s ${snptable}${impmethod} -r $refseq -w $winsize -e $encoding -o $outdir -d ${maindir} >> $logfile
             ;;
-        4)  if [ -z $snptable ] || [ ! -e $snptable ]; then echo "ERROR: must choose valid snptable (--snptable parameter $snptable is not defined or does not exist)"; exit 1; fi
+
+        # ----------------------------------------------------------------
+        #     Task 4
+        # ----------------------------------------------------------------
+
+        4)  if [ -z $snptable ] || [ ! -e $snptable ]; then
+                echo "ERROR: must choose valid snptable (--snptable parameter $snptable is not defined or does not exist)"
+                exit 1
+            fi
             chrom=$(head -1 $snptable | cut -f1 -d',')
             freqs=$outdir/$(basename $bamfile)".$chrom.freqs"
-            if [ ! -e $freqs ]; then echo "ERROR: haplotype frequencies file $freqs not found!"; exit 1; fi
+            if [ ! -e $freqs ]; then
+                echo "ERROR: haplotype frequencies file $freqs not found!"
+                exit 1
+            fi
+
             echo "COMMAND: ${maindir}/scripts/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d ${maindir}" >> $logfile
             ${maindir}/scripts/calculate_HAFs.sh -f $freqs -s $snptable -o $outdir -d ${maindir} >> $logfile
             ;;
+
+        # ----------------------------------------------------------------
+        #     Error case
+        # ----------------------------------------------------------------
+
         * ) echo "ERROR: $task is not a defined task number"; usage
             exit 1
     esac

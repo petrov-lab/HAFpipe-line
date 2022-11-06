@@ -31,5 +31,4 @@ BEGIN{
     print pos","ref","alt","nCt","refCt","altCt","hetCt
 }' >> ${snpTable}.alleleCts
 
-echo "allele counts written to:"
-echo ${snpTable}.alleleCts
+echo "allele counts written to: ${snpTable}.alleleCts"
