@@ -20,7 +20,7 @@ altCtCol=$(head -1 $snpFile.alleleCts | tr ',' '\n' | awk '($1=="altCt"){print N
 altCol=$(head -1 $snpFile.alleleCts | tr ',' '\n' | awk '($1=="alt"){print NR}')
 namesRow=$(head $snpFile | grep -n Ref | cut -f1 -d':')
 
-head -$namesRow $snpFile | tail -1 > $snpFile.imputed
+head -$namesRow $snpFile | tail -1 > $snpFile.simpute
 
 join -j 1 \
 <(tail -n +2 $snpFile.alleleCts | awk -v cols="$posCol,$refCtCol,$altCtCol,$altCol" -F ',' '
@@ -42,6 +42,5 @@ BEGIN{ srand()}
     }
     printf"\n"
     }
-}'  >> $snpFile.imputed
-echo "imputed SNPs written to
-${snpFile}.imputed"
+}'  >> $snpFile.simpute
+echo "imputed SNPs written to ${snpFile}.simpute"
