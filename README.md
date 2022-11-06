@@ -4,7 +4,19 @@ HAF-pipe is a bash- and R-based pipeline to calculate haplotype-inferred allele 
 
 ## Paper
 
-> Tilk, S., Bergland, A., Goodman, A., Schmidt, P., Petrov, D., & Greenblum, S. (2019). Accurate Allele Frequencies from Ultra-low Coverage Pool-Seq Samples in Evolve-and-Resequence Experiments. G3: Genes|Genomes|Genetics, 9(12), 4159 LP – 4168. https://doi.org/10.1534/g3.119.400755
+This tool is described in:
+
+> "Accurate Allele Frequencies from Ultra-low Coverage Pool-Seq Samples in Evolve-and-Resequence Experiments."<br />
+> Tilk S, Bergland A, Goodman A, Schmidt P, Petrov D, Greenblum S.<br />
+> G3: Genes|Genomes|Genetics, 9(12), 4159 LP - 4168, 2019. [doi:10.1534/g3.119.400755](https://doi.org/10.1534/g3.119.400755)
+
+This work heavily relies on HARP. Hence, please do not forget to cite this as well:
+
+> "Maximum Likelihood Estimation of Frequencies of Known Haplotypes from Pooled Sequence Data."<br />
+> Kessner D, Turner T, Novembre J.<br />
+> Molecular Biology and Evolution 30 (5): 1145–58, 2013. [doi:10.1093/molbev/mst016](https://doi.org/10.1093/molbev/mst016)
+
+For further references, such as references of the imputation methods, please see above papers.
 
 ## Dependencies
 
