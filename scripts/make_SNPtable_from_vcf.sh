@@ -86,9 +86,12 @@ echo "making snptable for chrom $chrom from $vcf, starting from column $firstSam
 maindir=$(dirname $0)/..
 
 ##PRINT HEADER
-zcat -f $vcf | head -1000  | grep "#C" | head -1 | awk -v fsc=$firstSampleCol '{for(i=fsc;i<=NF;i++){printf $i","}}' |  sed "s/^/${chrom},Ref,/" | sed 's/,$/\n/'  > $snptable
+zcat -f $vcf | head -1000  | grep "#CHROM" | head -1 | \
+awk -v fsc=$firstSampleCol '{for(i=fsc;i<=NF;i++){printf $i","}}' | \
+sed "s/^/${chrom},Ref,/" | sed 's/,$/\n/' > $snptable
 
-zcat -f $vcf | grep -P '^'$chrom'\t' | grep PASS | awk -v fsc="$firstSampleCol" -v mincalls="$mincalls" -v keephets="$keephets" '
+zcat -f $vcf | grep -P '^'$chrom'\t' | \
+awk -v fsc="$firstSampleCol" -v mincalls="$mincalls" -v keephets="$keephets" '
 BEGIN{
     baseCodes["AG"]="R";baseCodes["GA"]="R"
     baseCodes["CT"]="Y";baseCodes["TC"]="Y"
@@ -98,7 +101,7 @@ BEGIN{
     baseCodes["AC"]="M";baseCodes["CA"]="M"
 }
 {
-    if(length($5)==1 && length($4)==1) {
+    if( length($4)==1 && length($5)==1 && ( $7 == "PASS" || $7 == "." )) {
 
         gt_field=0
         split($(fsc-1),field_ids,":")
@@ -158,5 +161,4 @@ fi
 ${maindir}/scripts/count_SNPtable.sh $snptable
 ${maindir}/scripts/prepare_SNPtable_for_HAFcalc.sh $snptable
 
-echo "SNP table written to:"
-echo $snptable
+echo "SNP table written to: $snptable"
