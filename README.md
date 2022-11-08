@@ -16,7 +16,7 @@ This work heavily relies on HARP. Hence, please do not forget to cite this as we
 > Kessner D, Turner T, Novembre J.<br />
 > Molecular Biology and Evolution 30 (5): 1145–58, 2013. [doi:10.1093/molbev/mst016](https://doi.org/10.1093/molbev/mst016)
 
-For further references, such as references of the imputation methods, please see above papers.
+When using the "npute" imputation method, please also cite their work; see the reference in the `NPUTEv1` directory here. For further references, please see above papers.
 
 ## Dependencies
 
