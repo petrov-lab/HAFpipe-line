@@ -98,6 +98,10 @@ HAFpipe_wrapper.sh -t 1,2,3,4 \
 
 ```
 
+## Full Pipeline
+
+HAF-pipe takes per-sample bam files as input. Typically however, analysis projects start from the raw fastq files produced by sequencing the samples. If you are looking for an easy way to process these into bam files, and then run HAF-pipe on them, please have a look at the [grenepipe](https://github.com/moiexpositoalonsolab/grenepipe) pipeline. It offers a [specialized workflow](https://github.com/moiexpositoalonsolab/grenepipe/wiki/Advanced-Usage#frequency-calling-from-pool-seq-data-with-haf-pipe) that trims and maps the reads, optionally runs quality filters and quality control on the data, and finally infers allele frequencies with HAF-pipe.
+
 ## Simulations
 
 To simulate recombination and pooled sequencing data from a panel of sequenced founders, see the scripts ```HAFpipe-sim.run_forqs.sh``` and ```HAFpipe-sim.simulate_poolseq.sh``` in the simulations folder.
